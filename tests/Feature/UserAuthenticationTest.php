@@ -79,6 +79,15 @@ class UserAuthenticationTest extends TestCase
         $response->assertJsonValidationErrorFor('password');
     }
 
+    public function test_logout_require_active_bearer_token(): void
+    {
+        $this->setupDatabase();
+
+        $response = $this->postJson('/api/logout');
+
+        $response->assertUnauthorized();
+    }
+
     private function setupDatabase()
     {
         Artisan::call('migrate');
