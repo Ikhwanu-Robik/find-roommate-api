@@ -10,12 +10,14 @@ This is the Backend API.
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Ikhwanu-Robik/Hospital-Information-System.git
-cd Hospital-Information-System
+git clone https://github.com/Ikhwanu-Robik/Colivers-API.git
+cd Colivers-API
 ```
+
 ---
 
 ### 2. Install Dependencies
+
 #### 🧩 PHP & Laravel dependencies
 
 ```bash
