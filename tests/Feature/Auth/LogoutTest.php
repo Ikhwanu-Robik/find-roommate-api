@@ -5,9 +5,11 @@ namespace Tests\Feature\Auth;
 use Tests\TestCase;
 use Tests\Util\Util;
 use Tests\Util\Auth\LoginUtil;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class LogoutTest extends TestCase
 {
+    use RefreshDatabase;
     private $user;
 
     public function test_logout_require_active_bearer_token(): void

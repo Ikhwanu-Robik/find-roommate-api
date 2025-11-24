@@ -2,12 +2,15 @@
 
 namespace Tests\Feature\Auth;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use Tests\Util\Util;
 use Tests\Util\Auth\LoginUtil;
 
 class LoginTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_user_can_login_with_correct_credentials(): void
     {
         Util::setupDatabase();
