@@ -3,7 +3,8 @@
 namespace Tests\Feature\Auth;
 
 use Tests\TestCase;
-use Tests\Feature\Auth\Util;
+use Tests\Util\Util;
+use Tests\Util\Auth\LoginUtil;
 
 class LogoutTest extends TestCase
 {
@@ -21,16 +22,15 @@ class LogoutTest extends TestCase
     public function test_user_can_logout(): void
     {
         Util::setupDatabase();
-        $this->user = Util::createUser();
-        $loginResponse = $this->postJson('/api/login', [
-            'phone' => $this->user->phone,
-            'password' => $this->user->passwordPlain
-        ]);
+        $loginCredentials = LoginUtil::getLoginData();
+        $loginResponse = $this->postJson('/api/login', $loginCredentials);
         $bearerToken = 'Bearer ' . $loginResponse->json('token');
-
-        $logoutResponse = $this->postJson('/api/logout', [], [
+        $headers = [
             'Authorization' => $bearerToken
-        ]);
+        ];
+        $data = [];
+
+        $logoutResponse = $this->postJson('/api/logout', $data, $headers);
 
         $logoutResponse->assertOk();
     }
