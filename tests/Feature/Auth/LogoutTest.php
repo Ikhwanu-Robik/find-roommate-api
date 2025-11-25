@@ -24,7 +24,7 @@ class LogoutTest extends TestCase
     public function test_user_can_logout(): void
     {
         Util::setupDatabase();
-        $loginCredentials = LoginUtil::getLoginDataWithout([]);
+        $loginCredentials = LoginUtil::getLoginCredentialsWithout([]);
         $loginResponse = $this->postJson('/api/login', $loginCredentials);
         $bearerToken = 'Bearer ' . $loginResponse->json('token');
         $headers = [
