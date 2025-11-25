@@ -4,14 +4,14 @@ namespace Tests\Feature\Auth;
 
 use Tests\TestCase;
 use Tests\Util\Util;
-use Tests\Util\Auth\SignUpUtil;
+use Tests\Util\Auth\SignupUtil;
 
 class SignupTest extends TestCase
 {
     public function test_user_can_signup(): void
     {
         Util::setupDatabase();
-        $data = SignUpUtil::getSignUpDataWithout([]);
+        $data = SignupUtil::getSignupAttributesWithout([]);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -31,7 +31,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_name(): void
     {
-        $data = SignUpUtil::getSignUpDataWithout(['name']);
+        $data = SignupUtil::getSignupAttributesWithout(['name']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -41,7 +41,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_phone(): void
     {
-        $data = SignUpUtil::getSignUpDataWithout(['phone']);
+        $data = SignupUtil::getSignupAttributesWithout(['phone']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -51,7 +51,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_valid_format_phone(): void
     {
-        $data = SignUpUtil::getSignUpDataInvalidate(['phone']);
+        $data = SignupUtil::getSignupAttributesInvalidate(['phone']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -64,7 +64,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_password(): void
     {
-        $data = SignUpUtil::getSignUpDataWithout(['password']);
+        $data = SignupUtil::getSignupAttributesWithout(['password']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -74,7 +74,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_birthdate(): void
     {
-        $data = SignUpUtil::getSignUpDataWithout(['birthdate']);
+        $data = SignupUtil::getSignupAttributesWithout(['birthdate']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -84,7 +84,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_birthdate_to_be_past_date(): void
     {
-        $data = SignupUtil::getSignUpDataInvalidate(['birthdate']);
+        $data = SignupUtil::getSignupAttributesInvalidate(['birthdate']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -97,7 +97,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_gender(): void
     {
-        $data = SignupUtil::getSignUpDataWithout(['gender']);
+        $data = SignupUtil::getSignupAttributesWithout(['gender']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -107,7 +107,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_non_binary_gender(): void
     {
-        $data = SignupUtil::getSignUpDataInvalidate(['gender']);
+        $data = SignupUtil::getSignupAttributesInvalidate(['gender']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -120,7 +120,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_address(): void
     {
-        $data = SignupUtil::getSignUpDataWithout(['address']);
+        $data = SignupUtil::getSignupAttributesWithout(['address']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -130,7 +130,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_bio(): void
     {
-        $data = SignUpUtil::getSignUpDataWithout(['bio']);
+        $data = SignupUtil::getSignupAttributesWithout(['bio']);
 
         $response = $this->postJson('/api/signup', $data);
 
