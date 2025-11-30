@@ -15,7 +15,7 @@ class SignupController extends Controller
         $pathToStoredImage = Storage::disk('public')->putFile('profile_pics', $profilePhotoFile);
 
         $attributes = $request->validated();
-        $attributes['profile_photo'] = $pathToStoredImage;
+        $attributes['profile_photo'] = $pathToStoredImage ? $pathToStoredImage : null;
         $user = User::create($attributes);
 
         $response = ['user' => $user];
