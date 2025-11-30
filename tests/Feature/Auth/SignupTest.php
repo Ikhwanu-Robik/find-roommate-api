@@ -4,13 +4,14 @@ namespace Tests\Feature\Auth;
 
 use Tests\TestCase;
 use Tests\Util\Auth\SignupUtil;
+use Tests\Util\DummyFilesystem;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SignupTest extends TestCase
 {
     use RefreshDatabase;
-    
+
     public function setUp(): void
     {
         parent::setUp();
@@ -179,5 +180,20 @@ class SignupTest extends TestCase
 
         $savedFilePath = $response->json('user.profile_photo');
         Storage::disk('public')->assertExists($savedFilePath);
+    }
+
+    public function test_signup_return_additional_message_if_image_storage_fails(): void
+    {
+        Storage::expects('disk')
+            ->with('public')
+            ->andReturn(new DummyFilesystem);
+        $data = SignupUtil::getSignupAttributesWithout([]);
+
+        $response = $this->postJson('/api/signup', $data);
+
+        $response->assertOk();
+        $response->assertJson([
+            'message' => 'Signup successful, but image storage failed. You can try again in the profile menu'
+        ]);
     }
 }
