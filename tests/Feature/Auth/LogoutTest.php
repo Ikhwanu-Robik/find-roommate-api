@@ -3,7 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use Tests\TestCase;
-use Tests\Util\Auth\LoginUtil;
+use Tests\Util\Auth\Login\LoginUtil;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class LogoutTest extends TestCase
@@ -19,16 +19,26 @@ class LogoutTest extends TestCase
 
     public function test_user_can_logout(): void
     {
-        $loginCredentials = LoginUtil::getLoginCredentialsWithout([]);
-        $loginResponse = $this->postJson('/api/login', $loginCredentials);
-        $bearerToken = 'Bearer ' . $loginResponse->json('token');
-        $headers = [
-            'Authorization' => $bearerToken
-        ];
+        $headers = $this->createHeaders();
         $data = [];
 
         $logoutResponse = $this->postJson('/api/logout', $data, $headers);
 
         $logoutResponse->assertOk();
+    }
+
+    private function createHeaders()
+    {
+        $bearerToken = $this->loginAndGetBearerToken();
+        return ['Authorization' => $bearerToken];
+    }
+
+    private function loginAndGetBearerToken()
+    {
+        $loginCredentials = LoginUtil::getLoginCredentialsWithout([]);
+        $loginResponse = $this->postJson('/api/login', $loginCredentials);
+
+        $bearerToken = 'Bearer ' . $loginResponse->json('token');
+        return $bearerToken;
     }
 }

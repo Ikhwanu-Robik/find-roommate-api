@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Util\Auth;
+namespace Tests\Util\Auth\Signup;
 
 use Illuminate\Http\UploadedFile;
 

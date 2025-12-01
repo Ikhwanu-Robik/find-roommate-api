@@ -3,7 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use Tests\TestCase;
-use Tests\Util\Auth\SignupUtil;
+use Tests\Util\Auth\Signup\SignupUtil;
 use Tests\Util\DummyFilesystem;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
