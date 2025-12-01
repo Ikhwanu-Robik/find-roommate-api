@@ -11,6 +11,13 @@ class MatchTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_get_matching_profiles_require_authentication(): void
+    {
+        $response = $this->getJson('/api/match/profiles');
+
+        $response->assertStatus(401);
+    }
+
     public function test_get_matching_profiles_require_gender(): void
     {
         $headers = $this->createHeaders();
