@@ -25,6 +25,10 @@ class GetMatchingRequest extends FormRequest
                 'min:17'
             ],
             'address' => 'required',
+            'lodging_id' => [
+                'required',
+                'exists:lodgings,id'
+            ]
         ];
     }
 }

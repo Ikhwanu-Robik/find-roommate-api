@@ -21,6 +21,7 @@ class InvalidData
             'gender' => 'transgender',
             'age' => -3,
             'address' => null,
+            'lodging_id' => null,
         ];
     }
 

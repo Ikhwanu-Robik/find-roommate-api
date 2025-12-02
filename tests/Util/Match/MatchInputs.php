@@ -2,6 +2,7 @@
 
 namespace Tests\Util\Match;
 
+use App\Models\Lodging;
 use Tests\Util\Match\InvalidData;
 
 class MatchInputs
@@ -21,6 +22,7 @@ class MatchInputs
             'gender' => fake()->randomElement(['male', 'female']),
             'age' => fake()->numberBetween(18, 70),
             'address' => 'Beavers Avenue No. 6, Ostaria, Breschendra',
+            'lodging_id' => Lodging::get()->random(1)->first()->id,
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Database\Seeders\LodgingSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use Tests\Util\Match\MatchUtil;
@@ -10,6 +11,12 @@ use Tests\Util\Auth\Login\LoginUtil;
 class MatchTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(LodgingSeeder::class);
+    }
 
     public function test_get_matching_profiles_require_authentication(): void
     {
@@ -58,7 +65,7 @@ class MatchTest extends TestCase
     {
         $headers = $this->createHeaders();
         $data = MatchUtil::getQueryDataWithout(['age']);
-        // the invalidate functions returns a negative integer age
+        // the invalidate function will return a negative integer age
         // so we add invalid string manually
         $data .= '&age=some-kind-of-string';
 
@@ -94,6 +101,34 @@ class MatchTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('address');
+    }
+
+    public function test_get_matching_profiles_require_lodging_id(): void
+    {
+        $headers = $this->createHeaders();
+        $data = MatchUtil::getQueryDataWithout(['lodging_id']);
+
+        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+
+        $response->assertStatus(422);
+        $response->assertOnlyJsonValidationErrors('lodging_id');
+    }
+
+    public function test_get_matching_profiles_require_lodging_id_to_correspond_to_existing_lodging(): void
+    {
+        $headers = $this->createHeaders();
+        $data = MatchUtil::getQueryDataWithout(['lodging_id']);
+        // the invalidate function will return null
+        // so we add invalid lodging_id manually
+        $data .= '&lodging_id=-1';
+
+        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+
+        $response->assertStatus(422);
+        $response->assertOnlyJsonValidationErrors('lodging_id');
+        $response->assertJsonValidationErrors([
+            'lodging_id' => 'The selected lodging id is invalid'
+        ]);
     }
 
     private function createHeaders()
