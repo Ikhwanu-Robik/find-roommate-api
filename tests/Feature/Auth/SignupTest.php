@@ -116,7 +116,7 @@ class SignupTest extends TestCase
         $response->assertOnlyJsonValidationErrors('gender');
     }
 
-    public function test_signup_require_non_binary_gender(): void
+    public function test_signup_require_binary_gender(): void
     {
         $data = SignupUtil::getSignupAttributesInvalidate(['gender']);
 

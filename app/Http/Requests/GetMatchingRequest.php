@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\BinaryGender;
 use Illuminate\Foundation\Http\FormRequest;
 
 class GetMatchingRequest extends FormRequest
@@ -14,7 +15,7 @@ class GetMatchingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'gender' => 'required',
+            'gender' => ['required', new BinaryGender],
         ];
     }
 }

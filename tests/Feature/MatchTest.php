@@ -29,6 +29,20 @@ class MatchTest extends TestCase
         $response->assertOnlyJsonValidationErrors('gender');
     }
 
+    public function test_get_matching_profiles_require_binary_gender(): void
+    {
+        $headers = $this->createHeaders();
+        $data = MatchUtil::getQueryDataInvalidate(['gender']);
+
+        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+
+        $response->assertStatus(422);
+        $response->assertOnlyJsonValidationErrors('gender');
+        $response->assertJsonValidationErrors([
+            'gender' => 'The gender must be either male or female'
+        ]);
+    }
+
     private function createHeaders()
     {
         $bearerToken = $this->loginAndGetBearerToken();

@@ -8,7 +8,13 @@ class MatchUtil
 {
     public static function getQueryDataWithout(array $exclusions)
     {
-        $formData = new MatchInputs();
-        return $formData->exclude($exclusions);
+        $queryData = new MatchInputs();
+        return $queryData->exclude($exclusions);
+    }
+
+    public static function getQueryDataInvalidate(array $keysToInvalidate)
+    {
+        $queryData = new MatchInputs();
+        return $queryData->invalidate($keysToInvalidate);
     }
 }
