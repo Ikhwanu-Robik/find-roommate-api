@@ -1,0 +1,6 @@
+php artisan test can not run if there's no Unit folder.
+
+Unit folder will not be kept at Github if there's no
+file inside it.
+
+So, this file must be kept.
