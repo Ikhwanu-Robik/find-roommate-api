@@ -13,9 +13,14 @@ class InvalidData
 
     private function createInvalidData()
     {
+        // TODO: make invalid be able to handle multiple cases
+        // for example
+        // age is invalid if it's negative integer
+        // age is also invalid if it's not an integer
         return [
             'gender' => 'transgender',
             'age' => -3,
+            'address' => null,
         ];
     }
 

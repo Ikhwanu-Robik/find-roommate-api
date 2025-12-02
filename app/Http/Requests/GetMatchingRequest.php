@@ -24,6 +24,7 @@ class GetMatchingRequest extends FormRequest
                 'integer',
                 'min:17'
             ],
+            'address' => 'required',
         ];
     }
 }

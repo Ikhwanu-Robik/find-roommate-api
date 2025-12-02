@@ -85,6 +85,17 @@ class MatchTest extends TestCase
         ]);
     }
 
+    public function test_get_matching_profiles_require_address(): void
+    {
+        $headers = $this->createHeaders();
+        $data = MatchUtil::getQueryDataWithout(['address']);
+
+        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+
+        $response->assertStatus(422);
+        $response->assertOnlyJsonValidationErrors('address');
+    }
+
     private function createHeaders()
     {
         $bearerToken = $this->loginAndGetBearerToken();

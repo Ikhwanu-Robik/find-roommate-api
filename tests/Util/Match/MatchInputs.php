@@ -20,6 +20,7 @@ class MatchInputs
         return [
             'gender' => fake()->randomElement(['male', 'female']),
             'age' => fake()->numberBetween(18, 70),
+            'address' => 'Beavers Avenue No. 6, Ostaria, Breschendra',
         ];
     }
 
