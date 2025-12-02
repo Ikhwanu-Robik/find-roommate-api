@@ -15,7 +15,10 @@ class GetMatchingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'gender' => ['required', new BinaryGender],
+            'gender' => [
+                'required',
+                new BinaryGender
+            ],
         ];
     }
 }
