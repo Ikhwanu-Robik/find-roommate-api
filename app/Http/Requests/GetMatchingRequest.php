@@ -19,6 +19,11 @@ class GetMatchingRequest extends FormRequest
                 'required',
                 new BinaryGender
             ],
+            'age' => [
+                'required',
+                'integer',
+                'min:17'
+            ],
         ];
     }
 }

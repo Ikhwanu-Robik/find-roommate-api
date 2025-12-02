@@ -19,6 +19,7 @@ class MatchInputs
     {
         return [
             'gender' => fake()->randomElement(['male', 'female']),
+            'age' => fake()->numberBetween(18, 70),
         ];
     }
 
@@ -55,7 +56,11 @@ class MatchInputs
         foreach ($assocArr as $key => $value) {
             $pair = $key . "=" . $value;
             $queryString .= $pair;
+            $queryString .= '&';
         }
+
+        // remove trailing &
+        $queryString = substr($queryString, 0, strlen($queryString) - 1);
 
         return $queryString;
     }

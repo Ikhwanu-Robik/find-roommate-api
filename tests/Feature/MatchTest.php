@@ -43,6 +43,48 @@ class MatchTest extends TestCase
         ]);
     }
 
+    public function test_get_matching_profiles_require_age(): void
+    {
+        $headers = $this->createHeaders();
+        $data = MatchUtil::getQueryDataWithout(['age']);
+
+        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+
+        $response->assertStatus(422);
+        $response->assertOnlyJsonValidationErrors('age');
+    }
+
+    public function test_get_matching_profiles_require_integer_age(): void
+    {
+        $headers = $this->createHeaders();
+        $data = MatchUtil::getQueryDataWithout(['age']);
+        // the invalidate functions returns a negative integer age
+        // so we add invalid string manually
+        $data .= '&age=some-kind-of-string';
+
+        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+
+        $response->assertStatus(422);
+        $response->assertOnlyJsonValidationErrors('age');
+        $response->assertJsonValidationErrors([
+            'age' => 'The age field must be an integer'
+        ]);
+    }
+
+    public function test_get_matching_profiles_require_age_to_be_greater_than_16(): void
+    {
+        $headers = $this->createHeaders();
+        $data = MatchUtil::getQueryDataInvalidate(['age']);
+
+        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+
+        $response->assertStatus(422);
+        $response->assertOnlyJsonValidationErrors('age');
+        $response->assertJsonValidationErrors([
+            'age' => 'The age field must be at least 17'
+        ]);
+    }
+
     private function createHeaders()
     {
         $bearerToken = $this->loginAndGetBearerToken();

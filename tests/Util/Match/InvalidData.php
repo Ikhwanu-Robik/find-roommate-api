@@ -15,6 +15,7 @@ class InvalidData
     {
         return [
             'gender' => 'transgender',
+            'age' => -3,
         ];
     }
 
