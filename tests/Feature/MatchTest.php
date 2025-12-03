@@ -65,8 +65,8 @@ class MatchTest extends TestCase
     {
         $headers = $this->createHeaders();
         $data = MatchUtil::getQueryDataWithout(['age']);
-        // the invalidate function will return a negative integer age
-        // so we add invalid string manually
+        // getQueryInvalidate(['age']) can only return a negative integer age
+        // so we add invalid "string" age manually
         $data .= '&age=some-kind-of-string';
 
         $response = $this->getJson('/api/match/profiles' . $data, $headers);
@@ -118,7 +118,7 @@ class MatchTest extends TestCase
     {
         $headers = $this->createHeaders();
         $data = MatchUtil::getQueryDataWithout(['lodging_id']);
-        // the invalidate function will return null
+        // getQueryInvalidate(['lodging_id']) can only return null
         // so we add invalid lodging_id manually
         $data .= '&lodging_id=-1';
 
@@ -129,6 +129,17 @@ class MatchTest extends TestCase
         $response->assertJsonValidationErrors([
             'lodging_id' => 'The selected lodging id is invalid'
         ]);
+    }
+
+    public function test_get_matching_profiles_require_bio(): void
+    {
+        $headers = $this->createHeaders();
+        $data = MatchUtil::getQueryDataWithout(['bio']);
+
+        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+
+        $response->assertStatus(422);
+        $response->assertOnlyJsonValidationErrors('bio');
     }
 
     private function createHeaders()

@@ -19,9 +19,10 @@ class InvalidData
         // age is also invalid if it's not an integer
         return [
             'gender' => 'transgender',
-            'age' => -3,
+            'age' => -1 * fake()->randomNumber(),
             'address' => null,
             'lodging_id' => null,
+            'bio' => null,
         ];
     }
 

@@ -23,6 +23,7 @@ class MatchInputs
             'age' => fake()->numberBetween(18, 70),
             'address' => 'Beavers Avenue No. 6, Ostaria, Breschendra',
             'lodging_id' => Lodging::get()->random(1)->first()->id,
+            'bio' => fake()->realText(),
         ];
     }
 

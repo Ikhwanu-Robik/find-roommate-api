@@ -28,7 +28,8 @@ class GetMatchingRequest extends FormRequest
             'lodging_id' => [
                 'required',
                 'exists:lodgings,id'
-            ]
+            ],
+            'bio' => 'required',
         ];
     }
 }
