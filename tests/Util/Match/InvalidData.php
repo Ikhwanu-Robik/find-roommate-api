@@ -20,7 +20,6 @@ class InvalidData
         return [
             'gender' => 'transgender',
             'age' => -1 * fake()->randomNumber(),
-            'address' => null,
             'lodging_id' => null,
             'bio' => null,
         ];
