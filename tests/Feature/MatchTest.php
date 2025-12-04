@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use Database\Seeders\LodgingSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use Tests\Util\Match\MatchUtil;
+use Database\Seeders\LodgingSeeder;
 use Tests\Util\Auth\Login\LoginUtil;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class MatchTest extends TestCase
 {
@@ -131,8 +131,28 @@ class MatchTest extends TestCase
         $response->assertOnlyJsonValidationErrors('bio');
     }
 
+    public function test_get_matching_profiles_with_gender(): void
+    {
+        $headers = $this->createHeaders();
+        $maleProfiles = MatchUtil::createProfiles('male', 1);
+        $femaleProfiles = MatchUtil::createProfiles('female', 4);
+        $data = MatchUtil::getQueryDataWithout(['gender']);
+        // the gender is random, so we exclude it
+        // and add the gender manually
+        $data .= '&gender=' . 'male';
+
+        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+
+        $response->assertOk();
+        $response->assertExactJson([ 
+            'matching_profiles' => $maleProfiles,
+        ]);
+    }
+
     private function createHeaders()
     {
+        // can't put it in MatchUtil because
+        // loginAndGetBearerToken need to post json
         $bearerToken = $this->loginAndGetBearerToken();
         return ['Authorization' => $bearerToken];
     }
