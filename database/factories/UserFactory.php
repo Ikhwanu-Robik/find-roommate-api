@@ -13,7 +13,7 @@ class UserFactory extends Factory
     {
         return [
             'name' => fake()->name(),
-            'phone' => fake('ID')->phoneNumber(),
+            'phone' => fake('ID')->regexify('/^08[1-9]{1}\d{1}-{1}\d{4}-\d{2,5}$/'),
             'password' => static::$password ??= Hash::make('password'),
             'gender' => fake()->randomElement(['male', 'female']),
             'birthdate' => fake()->date(),

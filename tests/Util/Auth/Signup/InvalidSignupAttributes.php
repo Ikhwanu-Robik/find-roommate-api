@@ -17,7 +17,7 @@ class InvalidSignupAttributes
     {
         return [
             'name' => null,
-            'phone' => '+628122908228',
+            'phone' => fake('ID')->regexify('/^+62-08[1-9]{1}\d{1}-{1}\d{4}-\d{2,5}$/'),
             'password' => null,
             'birthdate' => now()->toDateString(),
             'gender' => 'transgender',

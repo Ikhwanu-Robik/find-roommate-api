@@ -25,10 +25,8 @@ class LoginCredentials
 
     private function createUser()
     {
-        $phone = '0812-6578-9189'; // factory doesn't generate phone with this format
         $password = '12345678';
         $user = User::factory()->create([
-           'phone' => $phone,
            'password' => $password
         ]);
         $user->passwordPlain = $password;
@@ -77,8 +75,8 @@ class LoginCredentials
 
     private function setWrongPhone()
     {
-        $wrongPhone = '0829-2893-1920'; // different to phone in createUser()
-        $this->credentials['phone'] = $wrongPhone;
+        $otherUser = User::factory()->create();
+        $this->credentials['phone'] = $otherUser->phone;
         return $this->credentials;
     }
 }

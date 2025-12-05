@@ -19,7 +19,7 @@ class SignupAttributes
     {
         return [
             'name' => fake()->name(),
-            'phone' => '0812-2938-2333', // faker doesn't support this specific format
+            'phone' => fake('ID')->regexify('/^08[1-9]{1}\d{1}-{1}\d{4}-\d{2,5}$/'),
             'password' => fake()->password(),
             'birthdate' => fake()->date(),
             'gender' => fake()->randomElement(['male', 'female']),
