@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
-use App\Http\Controllers\Auth\SignupController;
+use App\Http\Controllers\Auth\Customer\SignupController;
 
 Route::post('/signup', SignupController::class)->name('signup');
 Route::post('/login', LoginController::class)->name('login');

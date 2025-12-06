@@ -15,10 +15,6 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'phone' => fake('ID')->regexify('/^08[1-9]{1}\d{1}-{1}\d{4}-\d{2,5}$/'),
             'password' => static::$password ??= Hash::make('password'),
-            'gender' => fake()->randomElement(['male', 'female']),
-            'birthdate' => fake()->date(),
-            'address' => fake()->address(),
-            'bio' => fake()->realText()
         ];
     }
 }

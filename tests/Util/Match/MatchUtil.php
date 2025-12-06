@@ -2,7 +2,7 @@
 
 namespace Tests\Util\Match;
 
-use App\Models\User;
+use App\Models\CustomerProfile;
 use Tests\Util\Match\MatchInputs;
 
 class MatchUtil
@@ -21,10 +21,12 @@ class MatchUtil
 
     public static function createProfiles($gender, int $numberOfProfiles)
     {
-        User::factory()->count($numberOfProfiles)->create(['gender' => $gender]);
-        $users = User::where('gender', $gender)->get();
-        $users->sortBy('id');
-        return $users->toArray();
+        CustomerProfile::factory()->count($numberOfProfiles)->create(['gender' => $gender]);
+        // we need to do 'get()' manually to ensure the order of attributes
+        // is the same with the one returned by the API
+        $customerProfiles = CustomerProfile::where('gender', $gender)->get();
+        $customerProfiles->sortBy('id');
+        return $customerProfiles->toArray();
         // toArray() is necessary because the API response is also an array
     }
 }

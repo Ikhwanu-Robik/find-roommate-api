@@ -14,11 +14,6 @@ class User extends Authenticatable
         'name',
         'phone',
         'password',
-        'gender',
-        'birthdate',
-        'address',
-        'bio',
-        'profile_photo',
     ];
 
     protected $hidden = [
@@ -31,5 +26,10 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
         ];
+    }
+
+    public function profile()
+    {
+        return $this->morphTo();
     }
 }
