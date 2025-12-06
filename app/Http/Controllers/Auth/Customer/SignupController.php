@@ -12,54 +12,47 @@ class SignupController extends Controller
 {
     public function __invoke(SignupRequest $request)
     {
-        $pathToStoredImage = $this->storeImage($request);
-        $user = $this->createUser($request);
-        $customerProfile = $this->createCustomerProfile($request, $pathToStoredImage);
+        $profilePhotoFile = $request->file('profile_photo');
+        $pathToStoredImage = Storage::disk('public')->putFile('profile_pics', $profilePhotoFile);
 
-        $customerProfile->user()->save($user);
+        $userAttributes = $request->safe(['name', 'phone', 'password']);
+        $user = User::create($userAttributes);
 
-        $customerUser = $this->combineCustomerAttributesTo($user);
+        $customerProfileAttributes = $request->safe(['birthdate', 'gender', 'address', 'bio']);
+        $customerProfile = $this->createCustomerProfile(
+            $user,
+            $customerProfileAttributes,
+            $pathToStoredImage
+        );
+
+        $customerUser = $this->combineCustomerAttributes($customerProfile, $user);
 
         $response = $this->createResponse($customerUser, $pathToStoredImage);
         return response()->json($response);
     }
 
-    private function storeImage($request)
+    private function createCustomerProfile($user, $attributes, $profilePhotoPath)
     {
-        $profilePhotoFile = $request->file('profile_photo');
-        $pathToStoredImage = Storage::disk('public')->putFile('profile_pics', $profilePhotoFile);
-        return $pathToStoredImage;
-    }
+        $attributes['full_name'] = $user->name;
+        $attributes['profile_photo'] = $profilePhotoPath ? $profilePhotoPath : null;
+        $customerProfile = CustomerProfile::create($attributes);
 
-    private function createUser($request)
-    {
-        $userAttributes = $request->safe(['name', 'phone', 'password']);
-        $user = User::create($userAttributes);
-        return $user;
-    }
-
-    private function createCustomerProfile($request, $profilePhotoPath)
-    {
-        $customerProfileAttributes = $request->safe(['birthdate', 'gender', 'address', 'bio']);
-        $customerProfileAttributes['full_name'] = $request->validated('name');
-        $customerProfileAttributes['profile_photo'] = $profilePhotoPath ? $profilePhotoPath : null;
-        $customerProfile = CustomerProfile::create($customerProfileAttributes);
+        $customerProfile->user()->save($user);
+        
         return $customerProfile;
     }
 
-    private function combineCustomerAttributesTo($user)
+    private function combineCustomerAttributes($customerProfile, $user)
     {
-        $user = User::with('profile')->find($user->id);
-
         return collect([
             'id' => $user->id,
             'name' => $user->name,
             'phone' => $user->phone,
-            'gender' => $user->profile->gender,
-            'birthdate' => $user->profile->birthdate,
-            'address' => $user->profile->address,
-            'bio' => $user->profile->bio,
-            'profile_photo' => $user->profile->profile_photo,
+            'gender' => $customerProfile->gender,
+            'birthdate' => $customerProfile->birthdate,
+            'address' => $customerProfile->address,
+            'bio' => $customerProfile->bio,
+            'profile_photo' => $customerProfile->profile_photo,
         ]);
     }
 
