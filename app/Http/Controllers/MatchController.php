@@ -10,10 +10,24 @@ class MatchController extends Controller
     public function getMatchingProfiles(GetMatchingRequest $request)
     {
         $gender = $request->validated('gender');
-        $matchingProfiles = CustomerProfile::where('gender', $gender)->get();
+        $minBirthdate = $this->getBirthdateWhereAge($request->validated('min_age'));
+        $maxBirthdate = $this->getBirthdateWhereAge($request->validated('max_age'));
+
+        $matchingProfilesByGender = CustomerProfile::where('gender', $gender);
+        $matchingProfilesByAge = $matchingProfilesByGender->where('birthdate', '>=', $maxBirthdate)
+            ->where('birthdate', '<=', $minBirthdate);
+
+        $matchingProfiles = $matchingProfilesByAge->get();
+
         $matchingProfiles->sortBy('id');
         return response()->json([
             'matching_profiles' => $matchingProfiles,
         ]);
+    }
+
+    private function getBirthdateWhereAge(int $age)
+    {
+        $birthdate = now()->subYears($age);
+        return $birthdate->toDateString();
     }
 }

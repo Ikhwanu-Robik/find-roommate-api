@@ -91,7 +91,7 @@ class MatchTest extends TestCase
             'min_age' => 'The min age field must be at least 17'
         ]);
     }
-    
+
     public function test_get_matching_profiles_require_max_age(): void
     {
         $headers = $this->createHeaders();
@@ -125,10 +125,8 @@ class MatchTest extends TestCase
 
     public function test_get_matching_profiles_require_max_age_to_be_greater_than_or_equal_to_min_age(): void
     {
-        \Illuminate\Support\Facades\Log::info('require max age to be gte min age');
         $headers = $this->createHeaders();
         $data = MatchUtil::getQueryDataInvalidate(['max_age']);
-        // getQueryInvalidate(['max_age']) returns one less of min_age
         $minAge = MatchUtil::extractQueryValue($data, 'min_age');
 
         $response = $this->getJson('/api/match/profiles' . $data, $headers);
@@ -176,21 +174,20 @@ class MatchTest extends TestCase
         $response->assertOnlyJsonValidationErrors('bio');
     }
 
-    public function test_get_matching_profiles_with_gender(): void
+    public function test_get_matching_profiles_with_gender_and_age_range(): void
     {
         $headers = $this->createHeaders();
-        $maleProfiles = MatchUtil::createProfiles('male', 1);
-        $femaleProfiles = MatchUtil::createProfiles('female', 4);
-        $data = MatchUtil::getQueryDataWithout(['gender']);
-        // the gender is random, so we exclude it
-        // and add the gender manually
-        $data .= '&gender=male';
+        $expectedProfile = MatchUtil::prepareProfile(['gender' => 'male', 'age' => 26]);
+        $unexpectedProfile = MatchUtil::prepareProfile(['gender' => 'female', 'age' => 34]);
+        $data = MatchUtil::getQueryDataWithout(['gender', 'min_age', 'max_age']);
+        // the query data are random, so we just exclude and add manually the data we need to control
+        $data .= '&gender=male&min_age=17&max_age=26';
 
         $response = $this->getJson('/api/match/profiles' . $data, $headers);
 
         $response->assertOk();
-        $response->assertExactJson([ 
-            'matching_profiles' => $maleProfiles,
+        $response->assertExactJson([
+            'matching_profiles' => $expectedProfile,
         ]);
     }
 

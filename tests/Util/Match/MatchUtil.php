@@ -19,12 +19,36 @@ class MatchUtil
         return $queryData->invalidate($keysToInvalidate);
     }
 
-    public static function createProfiles($gender, int $numberOfProfiles)
+    public static function prepareProfile(array $properties)
     {
-        CustomerProfile::factory()->count($numberOfProfiles)->create(['gender' => $gender]);
-        // we need to do 'get()' manually to ensure the order of attributes
-        // is the same with the one returned by the API
-        $customerProfiles = CustomerProfile::where('gender', $gender)->get();
+        $birthdate = self::getBirthdateWhereAge($properties['age']);
+        $profile = self::createProfiles([
+            'gender' => $properties['gender'],
+            'birthdate' => $birthdate,
+        ], 1);
+        return $profile;
+    }
+
+    private static function getBirthdateWhereAge(int $age)
+    {
+        $birthdate = now()->subYears($age);
+        return $birthdate->toDateString();
+    }
+
+    private static function createProfiles(array $properties, int $numberOfProfiles)
+    {
+        CustomerProfile::factory()->count($numberOfProfiles)->create($properties);
+
+        $customerProfiles = new CustomerProfile;
+        foreach ($properties as $key => $value) {
+            $customerProfiles->where($key, $value);
+        }
+
+        // The order of attributes from 'CustomerProfile::create()' is different to 'get()',
+        // and the attributes returned by the API is a return of 'get()',
+        // and $customerProfiles will be compared with the API response,
+        // so $customerProfiles must be a return of 'get()'
+        $customerProfiles = $customerProfiles->get();
         $customerProfiles->sortBy('id');
         return $customerProfiles->toArray();
         // toArray() is necessary because the API response is also an array
@@ -45,7 +69,7 @@ class MatchUtil
                 break;
             }
         }
-        
+
         return $result;
     }
 }
