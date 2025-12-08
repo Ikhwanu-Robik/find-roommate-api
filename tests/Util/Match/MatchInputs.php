@@ -18,9 +18,13 @@ class MatchInputs
 
     private function createData()
     {
+        $minAge = fake()->numberBetween(17, 40);
+        $maxAge = ++$minAge;
+
         return [
             'gender' => fake()->randomElement(['male', 'female']),
-            'age' => fake()->numberBetween(18, 70),
+            'min_age' => $minAge,
+            'max_age' => $maxAge,
             'lodging_id' => Lodging::get()->random(1)->first()->id,
             'bio' => fake()->realText(),
         ];

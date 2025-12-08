@@ -50,45 +50,93 @@ class MatchTest extends TestCase
         ]);
     }
 
-    public function test_get_matching_profiles_require_age(): void
+    public function test_get_matching_profiles_require_min_age(): void
     {
         $headers = $this->createHeaders();
-        $data = MatchUtil::getQueryDataWithout(['age']);
+        $data = MatchUtil::getQueryDataWithout(['min_age']);
 
         $response = $this->getJson('/api/match/profiles' . $data, $headers);
 
         $response->assertStatus(422);
-        $response->assertOnlyJsonValidationErrors('age');
+        $response->assertOnlyJsonValidationErrors('min_age');
     }
 
-    public function test_get_matching_profiles_require_integer_age(): void
+    public function test_get_matching_profiles_require_min_age_to_be_integer(): void
     {
         $headers = $this->createHeaders();
-        $data = MatchUtil::getQueryDataWithout(['age']);
-        // getQueryInvalidate(['age']) can only return a negative integer age
+        $data = MatchUtil::getQueryDataWithout(['min_age']);
+        // getQueryInvalidate(['min_age']) can only return a negative integer age
         // so we add invalid "string" age manually
-        $data .= '&age=some-kind-of-string';
+        $data .= '&min_age=some-string';
 
         $response = $this->getJson('/api/match/profiles' . $data, $headers);
 
         $response->assertStatus(422);
-        $response->assertOnlyJsonValidationErrors('age');
+        $response->assertOnlyJsonValidationErrors('min_age');
         $response->assertJsonValidationErrors([
-            'age' => 'The age field must be an integer'
+            'min_age' => 'The min age field must be an integer'
         ]);
     }
 
-    public function test_get_matching_profiles_require_age_to_be_greater_than_16(): void
+    public function test_get_matching_profiles_require_min_age_to_be_at_least_17(): void
     {
         $headers = $this->createHeaders();
-        $data = MatchUtil::getQueryDataInvalidate(['age']);
+        $data = MatchUtil::getQueryDataInvalidate(['min_age']);
 
         $response = $this->getJson('/api/match/profiles' . $data, $headers);
 
         $response->assertStatus(422);
-        $response->assertOnlyJsonValidationErrors('age');
+        $response->assertOnlyJsonValidationErrors('min_age');
         $response->assertJsonValidationErrors([
-            'age' => 'The age field must be at least 17'
+            'min_age' => 'The min age field must be at least 17'
+        ]);
+    }
+    
+    public function test_get_matching_profiles_require_max_age(): void
+    {
+        $headers = $this->createHeaders();
+        $data = MatchUtil::getQueryDataWithout(['max_age']);
+
+        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+
+        $response->assertStatus(422);
+        $response->assertOnlyJsonValidationErrors('max_age');
+        $response->assertJsonValidationErrors([
+            'max_age' => 'The max age field is required'
+        ]);
+    }
+
+    public function test_get_matching_profiles_require_max_age_to_be_integer(): void
+    {
+        $headers = $this->createHeaders();
+        $data = MatchUtil::getQueryDataWithout(['max_age']);
+        // getQueryInvalidate(['max_age']) can only return a negative integer age
+        // so we add invalid "string" age manually
+        $data .= '&max_age=some-string';
+
+        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+
+        $response->assertStatus(422);
+        $response->assertOnlyJsonValidationErrors('max_age');
+        $response->assertJsonValidationErrors([
+            'max_age' => 'The max age field must be an integer'
+        ]);
+    }
+
+    public function test_get_matching_profiles_require_max_age_to_be_greater_than_or_equal_to_min_age(): void
+    {
+        \Illuminate\Support\Facades\Log::info('require max age to be gte min age');
+        $headers = $this->createHeaders();
+        $data = MatchUtil::getQueryDataInvalidate(['max_age']);
+        // getQueryInvalidate(['max_age']) returns one less of min_age
+        $minAge = MatchUtil::extractQueryValue($data, 'min_age');
+
+        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+
+        $response->assertStatus(422);
+        $response->assertOnlyJsonValidationErrors('max_age');
+        $response->assertJsonValidationErrors([
+            'max_age' => 'The max age field must be greater than or equal to ' . $minAge,
         ]);
     }
 
@@ -106,10 +154,7 @@ class MatchTest extends TestCase
     public function test_get_matching_profiles_require_lodging_id_to_correspond_to_existing_lodging(): void
     {
         $headers = $this->createHeaders();
-        $data = MatchUtil::getQueryDataWithout(['lodging_id']);
-        // getQueryInvalidate(['lodging_id']) can only return null
-        // so we add invalid lodging_id manually
-        $data .= '&lodging_id=-1';
+        $data = MatchUtil::getQueryDataInvalidate(['lodging_id']);
 
         $response = $this->getJson('/api/match/profiles' . $data, $headers);
 
@@ -139,7 +184,7 @@ class MatchTest extends TestCase
         $data = MatchUtil::getQueryDataWithout(['gender']);
         // the gender is random, so we exclude it
         // and add the gender manually
-        $data .= '&gender=' . 'male';
+        $data .= '&gender=male';
 
         $response = $this->getJson('/api/match/profiles' . $data, $headers);
 

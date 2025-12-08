@@ -9,14 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class LogoutTest extends TestCase
 {
     use RefreshDatabase;
-
-    public function test_logout_require_active_bearer_token(): void
-    {
-        $response = $this->postJson('/api/logout');
-
-        $response->assertUnauthorized();
-    }
-
+    
     public function test_user_can_logout(): void
     {
         $headers = $this->createHeaders();
@@ -25,6 +18,13 @@ class LogoutTest extends TestCase
         $logoutResponse = $this->postJson('/api/logout', $data, $headers);
 
         $logoutResponse->assertOk();
+    }
+    
+    public function test_logout_require_authentication(): void
+    {
+        $response = $this->postJson('/api/logout');
+
+        $response->assertUnauthorized();
     }
 
     private function createHeaders()

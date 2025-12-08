@@ -19,10 +19,18 @@ class GetMatchingRequest extends FormRequest
                 'required',
                 new BinaryGender
             ],
-            'age' => [
+            'min_age' => [
                 'required',
                 'integer',
-                'min:17'
+                'min:17',
+            ],
+            'max_age' => [
+                'required',
+                'exclude_without:min_age', // 'exclude' stops the validation process for current field
+                                             // so 'exclude' must be above 'gte' because 'gte' will fail
+                                             // if 'min_age' field is not present
+                'integer',
+                'gte:min_age',
             ],
             'lodging_id' => [
                 'required',

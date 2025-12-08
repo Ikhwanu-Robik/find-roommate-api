@@ -29,4 +29,23 @@ class MatchUtil
         return $customerProfiles->toArray();
         // toArray() is necessary because the API response is also an array
     }
+
+    public static function extractQueryValue(string $queryString, string $key)
+    {
+        // remove the '?' at the beginning of $queryString
+        $queryString = substr($queryString, 1);
+
+        $items = explode('&', $queryString);
+        $result = null;
+
+        foreach ($items as $item) {
+            [$itemKey, $itemValue] = explode('=', $item);
+            if ($itemKey === $key) {
+                $result = $itemValue;
+                break;
+            }
+        }
+        
+        return $result;
+    }
 }

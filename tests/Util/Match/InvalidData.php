@@ -17,10 +17,14 @@ class InvalidData
         // for example
         // age is invalid if it's negative integer
         // age is also invalid if it's not an integer
+        $startAge = fake()->numberBetween(-100, 16);
+        $endAge = 16; // valid start_age from MatchInputs.php will always be 17 or more
+        
         return [
             'gender' => 'transgender',
-            'age' => -1 * fake()->randomNumber(),
-            'lodging_id' => null,
+            'min_age' => $startAge,
+            'max_age' => $endAge,
+            'lodging_id' => -1,
             'bio' => null,
         ];
     }
