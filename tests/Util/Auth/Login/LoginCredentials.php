@@ -3,80 +3,67 @@
 namespace Tests\Util\Auth\Login;
 
 use App\Models\User;
+use Illuminate\Support\Collection;
 
 class LoginCredentials
 {
-    // TODO: consider splitting $credentials into many attributes
-    private $credentials;
-    private $invalidCredentials;
+    private string $phone;
+    private string $password;
+    private InvalidLoginCredentials $invalidCredentials;
 
     public function __construct()
     {
-        $this->credentials = $this->createCredentials();
+        $user = $this->createUser();
+        $this->phone = $user->phone;
+        $this->password = $user->passwordPlain;
         $this->invalidCredentials = new InvalidLoginCredentials();
     }
 
-    private function createCredentials()
-    {
-        $user = $this->createUser();
-        $credentials = $this->extractCredentialsFromUser($user);
-        return $credentials;
-    }
-
-    private function createUser()
+    private function createUser(): User
     {
         $password = '12345678';
         $user = User::factory()->create([
-           'password' => $password
+            'password' => $password
         ]);
         $user->passwordPlain = $password;
         return $user;
     }
 
-    private function extractCredentialsFromUser($user)
+    public function exclude(array $keys): Collection
     {
-        $credentials = [
-            'phone' => $user->phone,
-            'password' => $user->passwordPlain
-        ];
-        return $credentials;
-    }
-
-    public function exclude($exclusions)
-    {
-        $filteredCredentials = array_diff_key(
-            $this->credentials,
-            array_flip($exclusions)
-        );
+        $credentials = $this->collectAttributes();
+        $filteredCredentials = $credentials->except($keys);
 
         return $filteredCredentials;
     }
 
-    public function invalidate($keysToInvalidate)
+    private function collectAttributes(): Collection
     {
-        $filteredInvalidCredentials = $this->invalidCredentials->filterByKeys($keysToInvalidate);
-        $credentialsWithInvalids = $this->replaceWithInvalid($filteredInvalidCredentials);
+        return collect([
+            'phone' => $this->phone,
+            'password' => $this->password
+        ]);
+    }
+
+    public function invalidate(array $keys): Collection
+    {
+        $filteredInvalids = $this->invalidCredentials->only($keys);
+        
+        $credentials = $this->collectAttributes();
+        $credentialsWithInvalids = $credentials->replace($filteredInvalids);
 
         return $credentialsWithInvalids;
     }
 
-    private function replaceWithInvalid($invalids)
+    public function makeIncorrect(): Collection
     {
-        foreach ($invalids as $key => $value) {
-            $this->credentials[$key] = $value;
-        }
-        return $this->credentials;
+        $this->setWrongPhone();
+        return $this->collectAttributes();
     }
 
-    public function makeIncorrect()
-    {
-        return $this->setWrongPhone();
-    }
-
-    private function setWrongPhone()
+    private function setWrongPhone(): void
     {
         $otherUser = User::factory()->create();
-        $this->credentials['phone'] = $otherUser->phone;
-        return $this->credentials;
+        $this->phone = $otherUser->phone;
     }
 }

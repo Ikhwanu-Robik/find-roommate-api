@@ -2,31 +2,30 @@
 
 namespace Tests\Util\Auth\Login;
 
+use Illuminate\Support\Collection;
+
 class InvalidLoginCredentials
 {
-    private $invalidCredentials;
+    private $phone;
+    private $password;
 
     public function __construct()
     {
-        $this->invalidCredentials = $this->createInvalidCredentials();
+        $this->phone = fake()->regexify('/^\+62-08[1-9]{1}\d{1}-{1}\d{4}-\d{2,5}$/');
+        $this->password = null;
     }
 
-    private function createInvalidCredentials()
+    public function only(array $keys): array
     {
-        $phoneWrongFormat = fake('ID')->regexify('/^+62-08[1-9]{1}\d{1}-{1}\d{4}-\d{2,5}$/');
-        $invalidCredentials = [
-            'phone' => $phoneWrongFormat,
-            'password' => null
-        ];
-        return $invalidCredentials;
+        $invalidCredentials = $this->collectAttributes();
+        return $invalidCredentials->only($keys)->toArray();
     }
 
-    public function filterByKeys($keys)
+    private function collectAttributes(): Collection
     {
-        $filtered = [];
-        foreach ($keys as $key) {
-            $filtered[$key] = $this->invalidCredentials[$key];
-        }
-        return $filtered;
+        return collect([
+            'phone' => $this->phone,
+            'password' => $this->password
+        ]);
     }
 }
