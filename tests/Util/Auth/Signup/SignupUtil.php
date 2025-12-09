@@ -4,15 +4,16 @@ namespace Tests\Util\Auth\Signup;
 
 class SignupUtil
 {
-    public static function getSignupAttributesWithout(array $exclusions)
+    public static function getSignupAttributesWithout(array $keys): array
     {
         $signupAttributes = new SignupAttributes();
-        return $signupAttributes->exclude($exclusions);
+        return $signupAttributes->exclude($keys)->toArray();
     }
 
-    public static function getSignupAttributesInvalidate(array $invalidKeys)
+    public static function getSignupAttributesInvalidate(array $keys): array
     {
-        $signupAtributes = new SignupAttributes();        
-        return $signupAtributes->invalidate($invalidKeys);
+        $signupAtributes = new SignupAttributes();
+        $invalidAttributes = (new InvalidSignupAttributes())->only($keys);
+        return $signupAtributes->replaceWith($invalidAttributes)->toArray();
     }
 }

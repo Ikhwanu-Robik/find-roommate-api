@@ -3,55 +3,58 @@
 namespace Tests\Util\Auth\Signup;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 
 class SignupAttributes
 {
-    private $attributes;
-    private $invalidAttributes;
+    private $name;
+    private $phone;
+    private $password;
+    private $birthdate;
+    private $gender;
+    private $address;
+    private $bio;
+    private $profilePhoto;
 
     public function __construct()
     {
-        $this->attributes = $this->createAttributes();
-        $this->invalidAttributes = new InvalidSignupAttributes();
+        $this->name = fake()->name();
+        $this->phone = fake()->regexify('/^08[1-9]{1}\d{1}-{1}\d{4}-\d{2,5}$/');
+        $this->password = fake()->password();
+        $this->birthdate = fake()->date();
+        $this->gender = fake()->randomElement(['male', 'female']);
+        $this->address = fake()->address();
+        $this->bio = fake()->realText();
+        $this->profilePhoto = UploadedFile::fake()->image('profile_photo.jpg');
     }
 
-    private function createAttributes()
+    public function exclude(array $keys): Collection
     {
-        return [
-            'name' => fake()->name(),
-            'phone' => fake('ID')->regexify('/^08[1-9]{1}\d{1}-{1}\d{4}-\d{2,5}$/'),
-            'password' => fake()->password(),
-            'birthdate' => fake()->date(),
-            'gender' => fake()->randomElement(['male', 'female']),
-            'address' => fake()->address(),
-            'bio' => fake()->realText(),
-            'profile_photo' => UploadedFile::fake()->image('profile_photo.jpg'),
-        ];
-    }
-
-    public function exclude($exclusions)
-    {
-        $filteredAttributes = array_diff_key(
-            $this->attributes,
-            array_flip($exclusions)
-        );
-
+        $attributes = $this->collectAttributes();
+        $filteredAttributes = $attributes->except($keys);
+        
         return $filteredAttributes;
     }
-
-    public function invalidate($keysToInvalidate)
+    
+    private function collectAttributes(): Collection
     {
-        $filteredInvalidAttributes = $this->invalidAttributes->filterByKeys($keysToInvalidate);
-        $attributesWithInvalids = $this->replaceWithInvalid($filteredInvalidAttributes);
-
-        return $attributesWithInvalids;
+        return collect([
+            'name' => $this->name,
+            'phone' => $this->phone,
+            'password' => $this->password,
+            'birthdate' => $this->birthdate,
+            'gender' => $this->gender,
+            'address' => $this->address,
+            'bio' => $this->bio,
+            'profile_photo' => $this->profilePhoto,
+        ]);
     }
+    
+    public function replaceWith(array $data): Collection
+    {   
+        $attributes = $this->collectAttributes();
+        $replacedAttributes = $attributes->replace($data);
 
-    private function replaceWithInvalid($invalids)
-    {
-        foreach ($invalids as $key => $value) {
-            $this->attributes[$key] = $value;
-        }
-        return $this->attributes;
+        return $replacedAttributes;
     }
 }
