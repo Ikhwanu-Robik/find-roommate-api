@@ -9,14 +9,12 @@ class LoginCredentials
 {
     private string $phone;
     private string $password;
-    private InvalidLoginCredentials $invalidCredentials;
 
     public function __construct()
     {
         $user = $this->createUser();
         $this->phone = $user->phone;
         $this->password = $user->passwordPlain;
-        $this->invalidCredentials = new InvalidLoginCredentials();
     }
 
     private function createUser(): User
@@ -45,14 +43,12 @@ class LoginCredentials
         ]);
     }
 
-    public function invalidate(array $keys): Collection
-    {
-        $filteredInvalids = $this->invalidCredentials->only($keys);
-        
+    public function replaceWith(array $data): Collection
+    {   
         $credentials = $this->collectAttributes();
-        $credentialsWithInvalids = $credentials->replace($filteredInvalids);
+        $replacedCredentials = $credentials->replace($data);
 
-        return $credentialsWithInvalids;
+        return $replacedCredentials;
     }
 
     public function makeIncorrect(): Collection

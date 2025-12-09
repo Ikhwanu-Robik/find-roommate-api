@@ -13,7 +13,8 @@ class LoginUtil
     public static function getLoginCredentialsInvalidate(array $keys): array
     {
         $loginCredentials = new LoginCredentials();
-        return $loginCredentials->invalidate($keys)->toArray();
+        $invalidCredentials = (new InvalidLoginCredentials())->only($keys);
+        return $loginCredentials->replaceWith($invalidCredentials)->toArray();
     }
 
     public static function getIncorrectLoginData(): array
