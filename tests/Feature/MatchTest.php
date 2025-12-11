@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\ProfilesListing;
 use Tests\Util\Match\MatchUtil;
 use Database\Seeders\LodgingSeeder;
-use Tests\Util\Auth\Login\LoginUtil;
+use Tests\Util\Auth\Signup\SignupUtil;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class MatchTest extends TestCase
@@ -174,14 +176,30 @@ class MatchTest extends TestCase
         $response->assertOnlyJsonValidationErrors('bio');
     }
 
-    public function test_get_matching_profiles_with_gender_and_age_range(): void
+    public function test_get_matching_profiles_with_gender_and_age_range_and_lodging_id(): void
     {
         $headers = $this->createHeaders();
-        $expectedProfile = MatchUtil::prepareProfile(['gender' => 'male', 'age' => 26]);
-        $unexpectedProfile = MatchUtil::prepareProfile(['gender' => 'female', 'age' => 34]);
-        $data = MatchUtil::getQueryDataWithout(['gender', 'min_age', 'max_age']);
-        // the query data are random, so we just exclude and add manually the data we need to control
-        $data .= '&gender=male&min_age=17&max_age=26';
+
+        $expectedProfile = $this->createProfileAndPutIntoListing([
+            'gender' => 'male',
+            'age' => 26,
+            'lodging_id' => 1,
+        ]);
+        $unexpectedProfile = $this->createProfileAndPutIntoListing([
+            'gender' => 'female',
+            'age' => 34,
+            'lodging_id' => 2,
+        ]);
+
+        $data = MatchUtil::getQueryDataWithout([
+            'gender',
+            'min_age',
+            'max_age',
+            'lodging_id'
+        ]);
+        // the query data are random, so we just exclude
+        // and add manually the data we need to control
+        $data .= '&gender=male&min_age=17&max_age=26&lodging_id=1';
 
         $response = $this->getJson('/api/match/profiles' . $data, $headers);
 
@@ -191,20 +209,85 @@ class MatchTest extends TestCase
         ]);
     }
 
+    // these utility functions are here
+    // because they need to ->postJson()
     private function createHeaders()
     {
-        // can't put it in MatchUtil because
-        // loginAndGetBearerToken need to post json
-        $bearerToken = $this->loginAndGetBearerToken();
+        $credentials = $this->signupAndGetCredentials();
+        $bearerToken = $this->loginAndGetBearerToken($credentials);
         return ['Authorization' => $bearerToken];
     }
 
-    private function loginAndGetBearerToken()
+    private function signupAndGetCredentials()
     {
-        $loginCredentials = LoginUtil::getLoginCredentialsWithout([]);
+        $signupData = SignupUtil::getSignupAttributesWithout([]);
+        $this->postJson('/api/signup', $signupData);
+
+        $credentials = [
+            'phone' => $signupData['phone'],
+            'password' => $signupData['password'],
+        ];
+
+        return $credentials;
+    }
+
+    private function loginAndGetBearerToken(array $user)
+    {
+        // we cannot mock login because there
+        // is an extra logic in the LoginController    
+        // (i.e. creating customer profile for the user)    
+        $loginCredentials = [
+            'phone' => $user['phone'],
+            'password' => $user['password'],
+        ];
+
         $loginResponse = $this->postJson('/api/login', $loginCredentials);
 
         $bearerToken = 'Bearer ' . $loginResponse->json('token');
         return $bearerToken;
+    }
+
+    private function createProfileAndPutIntoListing(array $attributes)
+    {
+        $attributes = $this->replaceAgeWithBirthdate($attributes);
+
+        $signupUser = $this->signupCustomizeSomeAttributes($attributes);
+        $user = User::find($signupUser['id']);
+        $profile = $user->profile;
+
+        ProfilesListing::create([
+            'customer_profile_id' => $profile->id,
+            'lodging_id' => $attributes['lodging_id'],
+        ]);
+        $profileInListing = ProfilesListing::with(['customerProfile', 'lodging'])
+            ->where('customer_profile_id', $profile->id)
+            ->get()->toArray();
+        // using get(), with(), and toArray() so it
+        // matches with what the API returns
+
+        return $profileInListing;
+    }
+
+    private function replaceAgeWithBirthdate(array $properties)
+    {
+        $birthdate = MatchUtil::getBirthdateWhereAge($properties['age']);
+        unset($properties['age']);
+        $properties['birthdate'] = $birthdate;
+
+        return $properties;
+    }
+
+    private function signupCustomizeSomeAttributes(array $attributes)
+    {
+        $keysToCustomize = array_keys($attributes);
+        $signupData = SignupUtil::getSignupAttributesWithout($keysToCustomize);
+
+        foreach ($attributes as $key => $value) {
+            $signupData[$key] = $value;
+        }
+
+        $response = $this->postJson('/api/signup', $signupData);
+
+        return $response->json('user');
     }
 }

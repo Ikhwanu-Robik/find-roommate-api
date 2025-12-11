@@ -12,6 +12,6 @@ Route::post('/login', LoginController::class)->name('login');
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', LogoutController::class)->name('logout');
 
-    Route::get('/match/profiles', [MatchController::class, 'getMatchingProfiles'])
-        ->name('match.get-matching');
+    Route::get('/match/profiles', [MatchController::class, 'getProfilesRecommendation'])
+        ->name('match.get-profile-recommendation');
 });
