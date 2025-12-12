@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\ProfilesListing;
 use App\Http\Requests\GetProfilesRecommendationRequest as GetProfilesRecRequest;
-use Illuminate\Database\Eloquent\Builder;
 
 class MatchController extends Controller
 {
@@ -19,14 +18,11 @@ class MatchController extends Controller
             'lodging_id' => $requestData['lodging_id'],
         ]);
 
-        $matchingProfiles = ProfilesListing::whereHas(
-            'customerProfile',
-            function (Builder $query) use ($requestData) {
-                $query->where('gender', $requestData['gender']);
-                $query->where('birthdate', '>=', $requestData['max_birthdate'])
-                    ->where('birthdate', '<=', $requestData['min_birthdate']);
-            }
-        )
+        $matchingProfiles = ProfilesListing::whereGender($requestData['gender'])
+            ->whereBirthdateBetween([
+                'min_birthdate' => $requestData['min_birthdate'],
+                'max_birthdate' => $requestData['max_birthdate'],
+            ])
             ->where('lodging_id', $requestData['lodging_id'])
             ->with(['customerProfile', 'lodging'])->get();
 
