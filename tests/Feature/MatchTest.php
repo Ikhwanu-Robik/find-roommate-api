@@ -184,22 +184,25 @@ class MatchTest extends TestCase
             'gender' => 'male',
             'age' => 26,
             'lodging_id' => 1,
+            'bio' => 'i use arch btw',
         ]);
         $unexpectedProfile = $this->createProfileAndPutIntoListing([
             'gender' => 'female',
             'age' => 34,
             'lodging_id' => 2,
+            'bio' => 'i use windows 11',
         ]);
 
         $data = MatchUtil::getQueryDataWithout([
             'gender',
             'min_age',
             'max_age',
-            'lodging_id'
+            'lodging_id',
+            'bio'
         ]);
         // the query data are random, so we just exclude
         // and add manually the data we need to control
-        $data .= '&gender=male&min_age=17&max_age=26&lodging_id=1';
+        $data .= '&gender=male&min_age=17&max_age=26&lodging_id=1&bio=i use arch btw';
 
         $response = $this->getJson('/api/match/profiles' . $data, $headers);
 
@@ -247,8 +250,14 @@ class MatchTest extends TestCase
         return $bearerToken;
     }
 
-    private function createProfileAndPutIntoListing(array $attributes)
-    {
+    private function createProfileAndPutIntoListing(
+        array $attributes = [
+            'gender',
+            'age',
+            'lodging_id',
+            'bio',
+        ]
+    ) {
         $attributes = $this->replaceAgeWithBirthdate($attributes);
 
         $signupUser = $this->signupCustomizeSomeAttributes($attributes);

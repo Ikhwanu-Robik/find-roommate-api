@@ -23,6 +23,7 @@ class MatchController extends Controller
                 'min_birthdate' => $requestData['min_birthdate'],
                 'max_birthdate' => $requestData['max_birthdate'],
             ])
+            ->whereBioLike($requestData['bio'])
             ->where('lodging_id', $requestData['lodging_id'])
             ->with(['customerProfile', 'lodging'])->get();
 

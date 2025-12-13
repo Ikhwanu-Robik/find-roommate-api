@@ -69,6 +69,10 @@ class MatchInputs
         // remove trailing &
         $queryString = substr($queryString, 0, strlen($queryString) - 1);
 
+        if ($queryString === '') {
+            $queryString = '?';
+        }
+
         return $queryString;
     }
 }

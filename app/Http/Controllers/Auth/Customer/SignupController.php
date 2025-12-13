@@ -7,10 +7,11 @@ use App\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Auth\SignupRequest;
+use App\Services\TextTagsGenerator as TagsGenerator;
 
 class SignupController extends Controller
 {
-    public function __invoke(SignupRequest $request)
+    public function __invoke(SignupRequest $request, TagsGenerator $tagsGenerator)
     {
         $profilePhotoFile = $request->file('profile_photo');
         $pathToStoredImage = Storage::disk('public')->putFile('profile_pics', $profilePhotoFile);
@@ -24,6 +25,9 @@ class SignupController extends Controller
             $customerProfileAttributes,
             $pathToStoredImage
         );
+
+        $tags = $tagsGenerator->generate($customerProfile->bio);
+        $customerProfile->attachTags($tags);
 
         $customerUser = $this->combineCustomerAttributes($customerProfile, $user);
 
