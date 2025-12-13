@@ -18,13 +18,25 @@ class SignupRequest extends FormRequest
     {
         return [
             'name' => 'required',
-            'phone' => ['required', new IndonesianPhoneNumber],
+            'phone' => [
+                'required',
+                new IndonesianPhoneNumber
+            ],
             'password' => 'required',
-            'birthdate' => ['required', new PastDate],
-            'gender' => ['required', new BinaryGender],
+            'birthdate' => [
+                'required',
+                new PastDate
+            ],
+            'gender' => [
+                'required',
+                new BinaryGender
+            ],
             'address' => 'required',
             'bio' => 'required',
-            'profile_photo' => ['required', 'image']
+            'profile_photo' => [
+                'required',
+                'image'
+            ]
         ];
     }
 }

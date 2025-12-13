@@ -3,7 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use Tests\TestCase;
-use Tests\Util\Auth\SignupUtil;
+use Tests\Util\Auth\Signup\SignupUtil;
 use Tests\Util\DummyFilesystem;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -116,7 +116,7 @@ class SignupTest extends TestCase
         $response->assertOnlyJsonValidationErrors('gender');
     }
 
-    public function test_signup_require_non_binary_gender(): void
+    public function test_signup_require_binary_gender(): void
     {
         $data = SignupUtil::getSignupAttributesInvalidate(['gender']);
 

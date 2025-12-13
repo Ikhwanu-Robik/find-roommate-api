@@ -9,17 +9,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropUnique('users_email_unique');
-            $table->dropColumn('email');
-            $table->dropColumn('email_verified_at');
+            $table->unsignedBigInteger('profile_id')->nullable();
+            $table->string('profile_type')->nullable();
         });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->dropColumn('profile_type');
+            $table->dropColumn('profile_id');
         });
     }
 };
