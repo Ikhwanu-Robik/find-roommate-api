@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\CustomerProfile;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\ProfilesListing;
@@ -10,7 +11,7 @@ use Database\Seeders\LodgingSeeder;
 use Tests\Util\Auth\Signup\SignupUtil;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class MatchTest extends TestCase
+class GetProfilesRecommendationTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -20,30 +21,30 @@ class MatchTest extends TestCase
         $this->seed(LodgingSeeder::class);
     }
 
-    public function test_get_matching_profiles_require_authentication(): void
+    public function test_get_profiles_recommendation_require_authentication(): void
     {
-        $response = $this->getJson('/api/match/profiles');
+        $response = $this->getJson('/api/match/profiles-recommendation');
 
         $response->assertStatus(401);
     }
 
-    public function test_get_matching_profiles_require_gender(): void
+    public function test_get_profiles_recommendation_require_gender(): void
     {
         $headers = $this->createHeaders();
         $data = MatchUtil::getQueryDataWithout(['gender']);
 
-        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('gender');
     }
 
-    public function test_get_matching_profiles_require_binary_gender(): void
+    public function test_get_profiles_recommendation_require_binary_gender(): void
     {
         $headers = $this->createHeaders();
         $data = MatchUtil::getQueryDataInvalidate(['gender']);
 
-        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('gender');
@@ -52,18 +53,18 @@ class MatchTest extends TestCase
         ]);
     }
 
-    public function test_get_matching_profiles_require_min_age(): void
+    public function test_get_profiles_recommendation_require_min_age(): void
     {
         $headers = $this->createHeaders();
         $data = MatchUtil::getQueryDataWithout(['min_age']);
 
-        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('min_age');
     }
 
-    public function test_get_matching_profiles_require_min_age_to_be_integer(): void
+    public function test_get_profiles_recommendation_require_min_age_to_be_integer(): void
     {
         $headers = $this->createHeaders();
         $data = MatchUtil::getQueryDataWithout(['min_age']);
@@ -71,7 +72,7 @@ class MatchTest extends TestCase
         // so we add invalid "string" age manually
         $data .= '&min_age=some-string';
 
-        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('min_age');
@@ -80,12 +81,12 @@ class MatchTest extends TestCase
         ]);
     }
 
-    public function test_get_matching_profiles_require_min_age_to_be_at_least_17(): void
+    public function test_get_profiles_recommendation_require_min_age_to_be_at_least_17(): void
     {
         $headers = $this->createHeaders();
         $data = MatchUtil::getQueryDataInvalidate(['min_age']);
 
-        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('min_age');
@@ -94,12 +95,12 @@ class MatchTest extends TestCase
         ]);
     }
 
-    public function test_get_matching_profiles_require_max_age(): void
+    public function test_get_profiles_recommendation_require_max_age(): void
     {
         $headers = $this->createHeaders();
         $data = MatchUtil::getQueryDataWithout(['max_age']);
 
-        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('max_age');
@@ -108,7 +109,7 @@ class MatchTest extends TestCase
         ]);
     }
 
-    public function test_get_matching_profiles_require_max_age_to_be_integer(): void
+    public function test_get_profiles_recommendation_require_max_age_to_be_integer(): void
     {
         $headers = $this->createHeaders();
         $data = MatchUtil::getQueryDataWithout(['max_age']);
@@ -116,7 +117,7 @@ class MatchTest extends TestCase
         // so we add invalid "string" age manually
         $data .= '&max_age=some-string';
 
-        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('max_age');
@@ -125,13 +126,13 @@ class MatchTest extends TestCase
         ]);
     }
 
-    public function test_get_matching_profiles_require_max_age_to_be_greater_than_or_equal_to_min_age(): void
+    public function test_get_profiles_recommendation_require_max_age_to_be_greater_than_or_equal_to_min_age(): void
     {
         $headers = $this->createHeaders();
         $data = MatchUtil::getQueryDataInvalidate(['max_age']);
         $minAge = MatchUtil::extractQueryValue($data, 'min_age');
 
-        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('max_age');
@@ -140,23 +141,23 @@ class MatchTest extends TestCase
         ]);
     }
 
-    public function test_get_matching_profiles_require_lodging_id(): void
+    public function test_get_profiles_recommendation_require_lodging_id(): void
     {
         $headers = $this->createHeaders();
         $data = MatchUtil::getQueryDataWithout(['lodging_id']);
 
-        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('lodging_id');
     }
 
-    public function test_get_matching_profiles_require_lodging_id_to_correspond_to_existing_lodging(): void
+    public function test_get_profiles_recommendation_require_lodging_id_to_correspond_to_existing_lodging(): void
     {
         $headers = $this->createHeaders();
         $data = MatchUtil::getQueryDataInvalidate(['lodging_id']);
 
-        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('lodging_id');
@@ -165,51 +166,27 @@ class MatchTest extends TestCase
         ]);
     }
 
-    public function test_get_matching_profiles_require_bio(): void
+    public function test_get_profiles_recommendation_require_bio(): void
     {
         $headers = $this->createHeaders();
         $data = MatchUtil::getQueryDataWithout(['bio']);
 
-        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('bio');
     }
 
-    public function test_get_matching_profiles_with_gender_and_age_range_and_lodging_id(): void
+    public function test_profiles_recommendation_match_given_criteria(): void
     {
         $headers = $this->createHeaders();
+        [$expectedProfiles, $unexpectedProfiles] = $this->createDifferingProfilesInListing();
+        $data = $this->getDefaultQuery();
 
-        $expectedProfile = $this->createProfileAndPutIntoListing([
-            'gender' => 'male',
-            'age' => 26,
-            'lodging_id' => 1,
-            'bio' => 'i use arch btw',
-        ]);
-        $unexpectedProfile = $this->createProfileAndPutIntoListing([
-            'gender' => 'female',
-            'age' => 34,
-            'lodging_id' => 2,
-            'bio' => 'i use windows 11',
-        ]);
-
-        $data = MatchUtil::getQueryDataWithout([
-            'gender',
-            'min_age',
-            'max_age',
-            'lodging_id',
-            'bio'
-        ]);
-        // the query data are random, so we just exclude
-        // and add manually the data we need to control
-        $data .= '&gender=male&min_age=17&max_age=26&lodging_id=1&bio=i use arch btw';
-
-        $response = $this->getJson('/api/match/profiles' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
 
         $response->assertOk();
-        $response->assertExactJson([
-            'matching_profiles' => $expectedProfile,
-        ]);
+        $response->assertExactJson(['matching_profiles' => $expectedProfiles]);
     }
 
     // these utility functions are here
@@ -236,9 +213,6 @@ class MatchTest extends TestCase
 
     private function loginAndGetBearerToken(array $user)
     {
-        // we cannot mock login because there
-        // is an extra logic in the LoginController    
-        // (i.e. creating customer profile for the user)    
         $loginCredentials = [
             'phone' => $user['phone'],
             'password' => $user['password'],
@@ -250,11 +224,39 @@ class MatchTest extends TestCase
         return $bearerToken;
     }
 
-    private function createProfileAndPutIntoListing(
+    private function createDifferingProfilesInListing()
+    {
+        $attributes = [
+            'gender' => 'male',
+            'age' => 26,
+            'lodging_id' => 1,
+            'bio' => 'i use arch btw',
+        ];
+        $expectedProfile = $this->createProfile($attributes);
+        $expectedProfileInListing = $this->putIntoListing(
+            $expectedProfile,
+            $attributes['lodging_id']
+        );
+
+        $unexpectedAttributes = [
+            'gender' => 'female',
+            'age' => 34,
+            'lodging_id' => 2,
+            'bio' => 'i use windows 11',
+        ];
+        $unexpectedProfile = $this->createProfile($attributes);
+        $unexpectedProfileInListing = $this->putIntoListing(
+            $unexpectedProfile,
+            $unexpectedAttributes['lodging_id']
+        );
+
+        return [$expectedProfileInListing, $unexpectedProfileInListing];
+    }
+
+    private function createProfile(
         array $attributes = [
             'gender',
             'age',
-            'lodging_id',
             'bio',
         ]
     ) {
@@ -262,11 +264,15 @@ class MatchTest extends TestCase
 
         $signupUser = $this->signupCustomizeSomeAttributes($attributes);
         $user = User::find($signupUser['id']);
-        $profile = $user->profile;
 
+        return $user->profile;
+    }
+
+    private function putIntoListing(CustomerProfile $profile, string $lodgingId)
+    {
         ProfilesListing::create([
             'customer_profile_id' => $profile->id,
-            'lodging_id' => $attributes['lodging_id'],
+            'lodging_id' => $lodgingId,
         ]);
         $profileInListing = ProfilesListing::with(['customerProfile', 'lodging'])
             ->where('customer_profile_id', $profile->id)
@@ -298,5 +304,21 @@ class MatchTest extends TestCase
         $response = $this->postJson('/api/signup', $signupData);
 
         return $response->json('user');
+    }
+
+    private function getDefaultQuery()
+    {
+        $query = MatchUtil::getQueryDataWithout([
+            'gender',
+            'min_age',
+            'max_age',
+            'lodging_id',
+            'bio'
+        ]);
+        // the query data are random, so we just exclude
+        // and add manually the data we need to control
+        $query .= '&gender=male&min_age=17&max_age=26&lodging_id=1&bio=i use arch btw';
+
+        return $query;
     }
 }
