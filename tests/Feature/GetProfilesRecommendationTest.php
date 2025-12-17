@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\User;
+use Laravel\Sanctum\Sanctum;
 use App\Models\CustomerProfile;
 use App\Models\ProfilesListing;
 use Tests\Util\Match\MatchUtil;
@@ -31,10 +32,10 @@ class GetProfilesRecommendationTest extends TestCase
 
     public function test_get_profiles_recommendation_require_gender(): void
     {
-        $headers = $this->createHeaders();
+        Sanctum::actingAs(User::factory()->create());
         $data = MatchUtil::getQueryDataWithout(['gender']);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('gender');
@@ -42,10 +43,10 @@ class GetProfilesRecommendationTest extends TestCase
 
     public function test_get_profiles_recommendation_require_binary_gender(): void
     {
-        $headers = $this->createHeaders();
+        Sanctum::actingAs(User::factory()->create());
         $data = MatchUtil::getQueryDataInvalidate(['gender']);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('gender');
@@ -56,10 +57,10 @@ class GetProfilesRecommendationTest extends TestCase
 
     public function test_get_profiles_recommendation_require_min_age(): void
     {
-        $headers = $this->createHeaders();
+        Sanctum::actingAs(User::factory()->create());
         $data = MatchUtil::getQueryDataWithout(['min_age']);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('min_age');
@@ -67,13 +68,13 @@ class GetProfilesRecommendationTest extends TestCase
 
     public function test_get_profiles_recommendation_require_min_age_to_be_integer(): void
     {
-        $headers = $this->createHeaders();
+        Sanctum::actingAs(User::factory()->create());
         $data = MatchUtil::getQueryDataWithout(['min_age']);
         // getQueryInvalidate(['min_age']) can only return a negative integer age
         // so we add invalid "string" age manually
         $data .= '&min_age=some-string';
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('min_age');
@@ -84,10 +85,10 @@ class GetProfilesRecommendationTest extends TestCase
 
     public function test_get_profiles_recommendation_require_min_age_to_be_at_least_17(): void
     {
-        $headers = $this->createHeaders();
+        Sanctum::actingAs(User::factory()->create());
         $data = MatchUtil::getQueryDataInvalidate(['min_age']);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('min_age');
@@ -98,10 +99,10 @@ class GetProfilesRecommendationTest extends TestCase
 
     public function test_get_profiles_recommendation_require_max_age(): void
     {
-        $headers = $this->createHeaders();
+        Sanctum::actingAs(User::factory()->create());
         $data = MatchUtil::getQueryDataWithout(['max_age']);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('max_age');
@@ -112,13 +113,13 @@ class GetProfilesRecommendationTest extends TestCase
 
     public function test_get_profiles_recommendation_require_max_age_to_be_integer(): void
     {
-        $headers = $this->createHeaders();
+        Sanctum::actingAs(User::factory()->create());
         $data = MatchUtil::getQueryDataWithout(['max_age']);
         // getQueryInvalidate(['max_age']) can only return a negative integer age
         // so we add invalid "string" age manually
         $data .= '&max_age=some-string';
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('max_age');
@@ -129,11 +130,11 @@ class GetProfilesRecommendationTest extends TestCase
 
     public function test_get_profiles_recommendation_require_max_age_to_be_greater_than_or_equal_to_min_age(): void
     {
-        $headers = $this->createHeaders();
+        Sanctum::actingAs(User::factory()->create());
         $data = MatchUtil::getQueryDataInvalidate(['max_age']);
         $minAge = MatchUtil::extractQueryValue($data, 'min_age');
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('max_age');
@@ -144,10 +145,10 @@ class GetProfilesRecommendationTest extends TestCase
 
     public function test_get_profiles_recommendation_require_lodging_id(): void
     {
-        $headers = $this->createHeaders();
+        Sanctum::actingAs(User::factory()->create());
         $data = MatchUtil::getQueryDataWithout(['lodging_id']);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('lodging_id');
@@ -155,10 +156,10 @@ class GetProfilesRecommendationTest extends TestCase
 
     public function test_get_profiles_recommendation_require_lodging_id_to_correspond_to_existing_lodging(): void
     {
-        $headers = $this->createHeaders();
+        Sanctum::actingAs(User::factory()->create());
         $data = MatchUtil::getQueryDataInvalidate(['lodging_id']);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('lodging_id');
@@ -169,10 +170,10 @@ class GetProfilesRecommendationTest extends TestCase
 
     public function test_get_profiles_recommendation_require_bio(): void
     {
-        $headers = $this->createHeaders();
+        Sanctum::actingAs(User::factory()->create());
         $data = MatchUtil::getQueryDataWithout(['bio']);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('bio');
@@ -180,51 +181,20 @@ class GetProfilesRecommendationTest extends TestCase
 
     public function test_profiles_recommendation_match_given_criteria(): void
     {
-        $headers = $this->createHeaders();
+        $customerProfile = CustomerProfile::factory()->create();
+        $user = User::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
         $criteria = ['min_age' => 17, 'max_age' => 27, 'gender' => 'male', 'lodging_id' => 1, 'bio' => 'i use arch btw'];
         $expectedProfiles = $this->createProfilesFromCriteria($criteria);
         $data = $this->makeQueryFromCriteria($criteria);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data, $headers);
+        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
         $response->assertOk();
         $response->assertExactJson(['matching_profiles' => $expectedProfiles]);
     }
 
-    // these utility functions are here
-    // because they need to ->postJson()
-    private function createHeaders(): array
-    {
-        $credentials = $this->signupAndGetCredentials();
-        $bearerToken = $this->loginAndGetBearerToken($credentials);
-        return ['Authorization' => $bearerToken];
-    }
-
-    private function signupAndGetCredentials(): array
-    {
-        $signupData = SignupUtil::getSignupAttributesWithout([]);
-        $this->postJson('/api/signup', $signupData);
-
-        $credentials = [
-            'phone' => $signupData['phone'],
-            'password' => $signupData['password'],
-        ];
-
-        return $credentials;
-    }
-
-    private function loginAndGetBearerToken(array $user): string
-    {
-        $loginCredentials = [
-            'phone' => $user['phone'],
-            'password' => $user['password'],
-        ];
-
-        $loginResponse = $this->postJson('/api/login', $loginCredentials);
-
-        $bearerToken = 'Bearer ' . $loginResponse->json('token');
-        return $bearerToken;
-    }
 
     private function createProfilesFromCriteria(array $criteria): array
     {
