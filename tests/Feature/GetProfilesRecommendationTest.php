@@ -181,124 +181,54 @@ class GetProfilesRecommendationTest extends TestCase
 
     public function test_profiles_recommendation_match_given_criteria(): void
     {
+        // create the user making the request
         $customerProfile = CustomerProfile::factory()->create();
         $user = User::factory()->create();
         $customerProfile->user()->save($user);
         Sanctum::actingAs($user);
-        $criteria = ['min_age' => 17, 'max_age' => 27, 'gender' => 'male', 'lodging_id' => 1, 'bio' => 'i use arch btw'];
-        $expectedProfiles = $this->createProfilesFromCriteria($criteria);
-        $data = $this->makeQueryFromCriteria($criteria);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
+        // create the profiles that should be returned by the API
+        $criteria = ['min_age' => 17, 'max_age' => 27, 'gender' => 'male', 'lodging_id' => 1, 'bio' => 'i use arch btw'];
+        $expectedAttributes = MatchUtil::createAttributesFromCriteria($criteria);
+        $expectedProfiles = CustomerProfile::factory()->tagged()->create($expectedAttributes);
+
+        // create the profiles that should NOT be returned by the API
+        $otherCriteria = ['min_age' => 28, 'max_age' => 34, 'gender' => 'female', 'lodging_id' => 2, 'bio' => 'i use windows 11'];
+        $unexpectedAttributes = MatchUtil::createAttributesFromCriteria($otherCriteria);
+        $unexpectedProfiles = CustomerProfile::factory()->tagged()->create($unexpectedAttributes);
+
+        // putting the profiles in match's profiles listing
+        ProfilesListing::create([
+            'customer_profile_id' => $expectedProfiles->id,
+            'lodging_id' => $criteria['lodging_id']
+        ]);
+        ProfilesListing::create([
+            'customer_profile_id' => $unexpectedProfiles->id,
+            'lodging_id' => $otherCriteria['lodging_id']
+        ]);
+
+        $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($criteria));
 
         $response->assertOk();
-        $response->assertExactJson(['matching_profiles' => $expectedProfiles]);
+        $response->assertJsonCount(1, 'matching_profiles');
+        
+        $profileInListing = $response->json('matching_profiles')[0];
+        $profile = $profileInListing['customer_profile'];
+
+        $this->assertSame($criteria['gender'], $profile['gender']);
+        $this->assertSame($criteria['lodging_id'], $profileInListing['lodging_id']);
+        $this->assertSame($criteria['bio'], $profile['bio']);
+
+        $age = MatchUtil::birthdateToAge($profile['birthdate']);
+        $this->assertGreaterThanOrEqual($criteria['min_age'], $age);
+        $this->assertLessThanOrEqual($criteria['max_age'], $age);
     }
 
-
-    private function createProfilesFromCriteria(array $criteria): array
-    {
-        $attributes = $this->createAttributesFromCriteria($criteria);
-        $expectedProfile = $this->createProfile($attributes);
-
-        $expectedProfileInListing = $this->putIntoListing(
-            $expectedProfile,
-            $criteria['lodging_id']
-        );
-
-        return $expectedProfileInListing;
-    }
-
-    private function createAttributesFromCriteria(array $criteria): array
-    {
-        $attributes = $this->replaceAgeRangeWithAge($criteria);
-        $attributes = $this->replaceAgeWithBirthdate($attributes);
-        return $attributes;
-    }
-
-    private function replaceAgeRangeWithAge(array $attributes): array
-    {
-        $age = fake()->numberBetween($attributes['min_age'], $attributes['max_age']);
-        $attributes['age'] = $age;
-
-        unset($attributes['min_age'], $attributes['max_age']);
-
-        return $attributes;
-    }
-
-    private function replaceAgeWithBirthdate(array $properties): array
-    {
-        $birthdate = MatchUtil::getBirthdateWhereAge($properties['age']);
-        unset($properties['age']);
-        $properties['birthdate'] = $birthdate;
-
-        return $properties;
-    }
-
-    private function createProfile(array $attributes): Model
-    {
-        $signupUser = $this->signupCustomizeSomeAttributes($attributes);
-        $user = User::find($signupUser['id']);
-
-        return $user->profile;
-    }
-
-    private function signupCustomizeSomeAttributes(array $attributes): mixed
-    {
-        $keysToCustomize = array_keys($attributes);
-        $signupData = SignupUtil::getSignupAttributesWithout($keysToCustomize);
-
-        foreach ($attributes as $key => $value) {
-            $signupData[$key] = $value;
-        }
-
-        $response = $this->postJson('/api/signup', $signupData);
-
-        return $response->json('user');
-    }
-
-    private function putIntoListing(CustomerProfile $profile, string $lodgingId): array
-    {
-        ProfilesListing::create([
-            'customer_profile_id' => $profile->id,
-            'lodging_id' => $lodgingId,
-        ]);
-        $profileInListing = ProfilesListing::with(['customerProfile', 'lodging'])
-            ->where('customer_profile_id', $profile->id)
-            ->get()->toArray();
-        // using get(), with(), and toArray() so it
-        // matches with what the API returns
-
-        return $profileInListing;
-    }
-
-    private function makeQueryFromCriteria(array $criteria): string
-    {
-        $query = MatchUtil::getQueryDataWithout([
-            'gender',
-            'min_age',
-            'max_age',
-            'lodging_id',
-            'bio'
-        ]);
-        // the query data are random, so we just exclude
-        // and add manually the data we need to control
-        $query .= $this->arrayToQuery($criteria);
-
-        return $query;
-    }
-
-    private function arrayToQuery(array $array): string
-    {
-        $query = '&';
-
-        foreach ($array as $key => $value) {
-            $query .= $key . '=' . $value . '&';
-        }
-
-        // remove trailing &
-        $query = substr($query, 0, strlen($query) - 1);
-
-        return $query;
-    }
+    // to quote ChatGPT :
+    // A Feature test may fake any dependency that 
+    // is not the subject of the test, 
+    // even if it is "required in reality".
+    //
+    // so instead of authenticating for real,
+    // we should mock authentication
 }
