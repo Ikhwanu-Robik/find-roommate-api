@@ -9,8 +9,6 @@ use App\Models\CustomerProfile;
 use App\Models\ProfilesListing;
 use Tests\Util\Match\MatchUtil;
 use Database\Seeders\LodgingSeeder;
-use Tests\Util\Auth\Signup\SignupUtil;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class GetProfilesRecommendationTest extends TestCase
@@ -223,12 +221,4 @@ class GetProfilesRecommendationTest extends TestCase
         $this->assertGreaterThanOrEqual($criteria['min_age'], $age);
         $this->assertLessThanOrEqual($criteria['max_age'], $age);
     }
-
-    // to quote ChatGPT :
-    // A Feature test may fake any dependency that 
-    // is not the subject of the test, 
-    // even if it is "required in reality".
-    //
-    // so instead of authenticating for real,
-    // we should mock authentication
 }
