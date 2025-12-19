@@ -22,4 +22,9 @@ class CustomerProfile extends Model
     {
         return $this->morphOne(User::class, 'profile');
     }
+
+    public function chatRooms()
+    {
+        return $this->belongsToMany(ChatRoom::class);
+    }
 }

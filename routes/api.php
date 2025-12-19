@@ -14,4 +14,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/match/profiles', [MatchController::class, 'getProfilesRecommendation'])
         ->name('match.get-profile-recommendation');
+
+    Route::post('/match/profiles/{customerProfile}/chat', [MatchController::class, 'initiateChatRoom']);
 });

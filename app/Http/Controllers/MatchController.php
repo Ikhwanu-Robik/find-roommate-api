@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ChatRoom;
+use Illuminate\Http\Request;
+use App\Models\CustomerProfile;
 use App\Models\ProfilesListing;
 use App\Http\Requests\GetProfilesRecommendationRequest as GetProfilesRecRequest;
 
@@ -31,6 +34,18 @@ class MatchController extends Controller
 
         return response()->json([
             'matching_profiles' => $matchingProfiles,
+        ]);
+    }
+
+    public function initiateChatRoom(Request $request, CustomerProfile $customerProfile)
+    {
+        $initiatorProfile = $request->user()->profile;
+        $chatRoom = ChatRoom::create();
+        $chatRoom->customerProfiles()->save($initiatorProfile);
+        $chatRoom->customerProfiles()->save($customerProfile);
+
+        return response()->json([
+            'chat_room_id' => $chatRoom->id
         ]);
     }
 }
