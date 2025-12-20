@@ -10,10 +10,11 @@ use App\Models\ProfilesListing;
 use Tests\Util\Match\MatchUtil;
 use Database\Seeders\LodgingSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Util\Match\MatchAssertions;
 
 class GetProfilesRecommendationTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, MatchAssertions;
 
     public function setUp(): void
     {
@@ -191,8 +192,8 @@ class GetProfilesRecommendationTest extends TestCase
         $expectedProfiles = CustomerProfile::factory()->tagged()->create($expectedAttributes);
 
         // create the profiles that should NOT be returned by the API
-        $otherCriteria = ['min_age' => 28, 'max_age' => 34, 'gender' => 'female', 'lodging_id' => 2, 'bio' => 'i use windows 11'];
-        $unexpectedAttributes = MatchUtil::createAttributesFromCriteria($otherCriteria);
+        $nonCriteria = ['min_age' => 28, 'max_age' => 34, 'gender' => 'female', 'lodging_id' => 2, 'bio' => 'i use windows 11'];
+        $unexpectedAttributes = MatchUtil::createAttributesFromCriteria($nonCriteria);
         $unexpectedProfiles = CustomerProfile::factory()->tagged()->create($unexpectedAttributes);
 
         // putting the profiles in match's profiles listing
@@ -202,7 +203,7 @@ class GetProfilesRecommendationTest extends TestCase
         ]);
         ProfilesListing::create([
             'customer_profile_id' => $unexpectedProfiles->id,
-            'lodging_id' => $otherCriteria['lodging_id']
+            'lodging_id' => $nonCriteria['lodging_id']
         ]);
 
         $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($criteria));
@@ -215,7 +216,8 @@ class GetProfilesRecommendationTest extends TestCase
 
         $this->assertSame($criteria['gender'], $profile['gender']);
         $this->assertSame($criteria['lodging_id'], $profileInListing['lodging_id']);
-        $this->assertSame($criteria['bio'], $profile['bio']);
+
+        $this->assertSimilarBio($criteria['bio'], $profile['bio']);
 
         $age = MatchUtil::birthdateToAge($profile['birthdate']);
         $this->assertGreaterThanOrEqual($criteria['min_age'], $age);

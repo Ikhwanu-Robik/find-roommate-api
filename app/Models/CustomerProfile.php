@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\User;
 use Spatie\Tags\HasTags;
 use App\Services\TextTagsGenerator;
 use Illuminate\Database\Eloquent\Model;
@@ -32,6 +33,12 @@ class CustomerProfile extends Model
     {
         $tagsGenerator = app()->make(TextTagsGenerator::class);
         $tags = $tagsGenerator->generate($bio);
-        $builder->withAnyTags($tags);
+
+        $similarityThreshold = config('find_match.similarity_threshold');
+        $minSameTags = (int) ceil(count($tags) * $similarityThreshold);
+
+        $builder->whereHas('tags', function (Builder $innerBuilder) use ($tags) {
+            $innerBuilder->whereIn('tags.name->' . config('app.locale'),  $tags);
+        }, '>=', $minSameTags); 
     }
 }
