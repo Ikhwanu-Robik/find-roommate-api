@@ -40,9 +40,10 @@ class MatchController extends Controller
     public function initiateChatRoom(Request $request, CustomerProfile $customerProfile)
     {
         $initiatorProfile = $request->user()->profile;
+        $targetProfile = $customerProfile;
         $chatRoom = ChatRoom::create();
         $chatRoom->customerProfiles()->save($initiatorProfile);
-        $chatRoom->customerProfiles()->save($customerProfile);
+        $chatRoom->customerProfiles()->save($targetProfile);
 
         return response()->json([
             'chat_room_id' => $chatRoom->id
