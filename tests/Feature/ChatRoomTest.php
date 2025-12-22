@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\User;
+use App\Models\ChatRoom;
 use App\Models\CustomerProfile;
-use Illuminate\Support\Facades\Event;
 
 class ChatRoomTest extends TestCase
 {
@@ -20,7 +20,7 @@ class ChatRoomTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
         CustomerProfile::factory()->create()->user()->save($user);
-        
+
         $targetProfile = CustomerProfile::factory()->create();
 
         $response = $this->postJson('/api/match/profiles/' . $targetProfile->id . '/chat');
@@ -29,21 +29,25 @@ class ChatRoomTest extends TestCase
         $this->assertNotEmpty($response->json('chat_room_id'));
     }
 
-    // public function test_user_can_join_to_chat_room_with_invitation(): void
-    // {
-    //     $user = User::factory()->create();
-    //     $this->actingAs($user);
-    //     $customerProfile = CustomerProfile::factory()->create();
-    //     $customerProfile->user()->save($user);
-    //     $chatRoom = ChatRoom::factory()->hasProfiles(
-    //         $customerProfile,
-    //         CustomerProfile::factory()->create()
-    //     )->create();
+    public function test_user_can_join_to_chat_room_with_invitation(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
 
-    //     $response = $this->getJson('/api/match/chat-rooms/' . $chatRoom->id);
+        $chatRoom = ChatRoom::factory()->create();
+        $chatRoom->customerProfiles()->saveMany([
+            $customerProfile,
+            CustomerProfile::factory()->create()
+        ]);
 
-    //     $response->assertOk();
-    // }
+        // $response = $this->postJson('/api/broadcast/auth');
+        // $response->assertOk();
+
+        // $response = $this->websocket('ChatRooms.' . $chatRoom->id);
+        // $response->assertConnected();
+    }
 
     // public function test_user_cannot_join_to_chat_room_without_invitation(): void
     // {
@@ -86,6 +90,6 @@ class ChatRoomTest extends TestCase
 
     // public function test_chat_has_online_status(): void
     // {
-        
+
     // }
 }
