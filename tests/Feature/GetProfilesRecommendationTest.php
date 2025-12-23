@@ -48,7 +48,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_binary_gender(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = $this->matchInputs->invalidate(['gender']);
+        $data = $this->matchInputs->replace(['gender' => 'non-binary']);
 
         $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
@@ -73,10 +73,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_min_age_to_be_integer(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = $this->matchInputs->exclude(['min_age']);
-        // getQueryInvalidate(['min_age']) can only return a negative integer age
-        // so we add invalid "string" age manually
-        $data['min_age'] = 'some-string';
+        $data = $this->matchInputs->replace(['min_age' => 'some string']);
 
         $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
@@ -90,7 +87,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_min_age_to_be_at_least_17(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = $this->matchInputs->invalidate(['min_age']);
+        $data = $this->matchInputs->replace(['min_age' => 16]);
 
         $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
@@ -118,10 +115,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_max_age_to_be_integer(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = $this->matchInputs->exclude(['max_age']);
-        // getQueryInvalidate(['max_age']) can only return a negative integer age
-        // so we add invalid "string" age manually
-        $data['max_age'] = 'some-string';
+        $data = $this->matchInputs->replace(['max_age' => 'some string']);
 
         $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
@@ -135,7 +129,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_max_age_to_be_greater_than_or_equal_to_min_age(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = $this->matchInputs->invalidate(['max_age']);
+        $data = $this->matchInputs->replace(['min_age' => 17, 'max_age' => 16]);
 
         $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
@@ -160,7 +154,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_lodging_id_to_correspond_to_existing_lodging(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = $this->matchInputs->invalidate(['lodging_id']);
+        $data = $this->matchInputs->replace(['lodging_id' => -1]);
 
         $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
