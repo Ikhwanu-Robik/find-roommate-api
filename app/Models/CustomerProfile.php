@@ -3,7 +3,10 @@
 namespace App\Models;
 
 use App\Models\User;
-use Spatie\Tags\HasTags;
+
+// use Spatie\Tags\HasTags;
+use App\Services\Dummies\Spatie\Tags\HasTags;
+
 use App\Services\TextTagsGenerator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
