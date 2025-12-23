@@ -37,7 +37,7 @@ class MatchInputs
             array_flip($exclusions)
         );
 
-        return $this->formatAsQuery($filteredData);
+        return $filteredData;
     }
 
     public function invalidate(array $keysToInvalidate)
@@ -45,7 +45,7 @@ class MatchInputs
         $filteredInvalidData = $this->invalidData->filterByKeys($keysToInvalidate);
         $dataWithInvalids = $this->replaceWithInvalid($filteredInvalidData);
 
-        return $this->formatAsQuery($dataWithInvalids);
+        return $dataWithInvalids;
     }
 
     private function replaceWithInvalid($invalids)
@@ -54,25 +54,5 @@ class MatchInputs
             $this->data[$key] = $value;
         }
         return $this->data;
-    }
-
-    private function formatAsQuery(array $assocArr)
-    {
-        $queryString = "?";
-
-        foreach ($assocArr as $key => $value) {
-            $pair = $key . "=" . $value;
-            $queryString .= $pair;
-            $queryString .= '&';
-        }
-
-        // remove trailing &
-        $queryString = substr($queryString, 0, strlen($queryString) - 1);
-
-        if ($queryString === '') {
-            $queryString = '?';
-        }
-
-        return $queryString;
     }
 }

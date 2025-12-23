@@ -3,7 +3,6 @@
 namespace Tests\Util\Match;
 
 use Carbon\Carbon;
-use Tests\Util\Match\MatchInputs;
 
 class MatchUtil
 {

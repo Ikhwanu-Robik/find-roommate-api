@@ -39,7 +39,7 @@ class GetProfilesRecommendationTest extends TestCase
         Sanctum::actingAs(User::factory()->create());
         $data = $this->matchInputs->exclude(['gender']);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
+        $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('gender');
@@ -50,7 +50,7 @@ class GetProfilesRecommendationTest extends TestCase
         Sanctum::actingAs(User::factory()->create());
         $data = $this->matchInputs->invalidate(['gender']);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
+        $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('gender');
@@ -64,7 +64,7 @@ class GetProfilesRecommendationTest extends TestCase
         Sanctum::actingAs(User::factory()->create());
         $data = $this->matchInputs->exclude(['min_age']);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
+        $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('min_age');
@@ -76,9 +76,9 @@ class GetProfilesRecommendationTest extends TestCase
         $data = $this->matchInputs->exclude(['min_age']);
         // getQueryInvalidate(['min_age']) can only return a negative integer age
         // so we add invalid "string" age manually
-        $data .= '&min_age=some-string';
+        $data['min_age'] = 'some-string';
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
+        $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('min_age');
@@ -92,7 +92,7 @@ class GetProfilesRecommendationTest extends TestCase
         Sanctum::actingAs(User::factory()->create());
         $data = $this->matchInputs->invalidate(['min_age']);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
+        $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('min_age');
@@ -106,7 +106,7 @@ class GetProfilesRecommendationTest extends TestCase
         Sanctum::actingAs(User::factory()->create());
         $data = $this->matchInputs->exclude(['max_age']);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
+        $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('max_age');
@@ -121,9 +121,9 @@ class GetProfilesRecommendationTest extends TestCase
         $data = $this->matchInputs->exclude(['max_age']);
         // getQueryInvalidate(['max_age']) can only return a negative integer age
         // so we add invalid "string" age manually
-        $data .= '&max_age=some-string';
+        $data['max_age'] = 'some-string';
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
+        $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('max_age');
@@ -136,14 +136,13 @@ class GetProfilesRecommendationTest extends TestCase
     {
         Sanctum::actingAs(User::factory()->create());
         $data = $this->matchInputs->invalidate(['max_age']);
-        $minAge = MatchUtil::extractQueryValue($data, 'min_age');
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
+        $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('max_age');
         $response->assertJsonValidationErrors([
-            'max_age' => 'The max age field must be greater than or equal to ' . $minAge,
+            'max_age' => 'The max age field must be greater than or equal to ' . $data['min_age'],
         ]);
     }
 
@@ -152,7 +151,7 @@ class GetProfilesRecommendationTest extends TestCase
         Sanctum::actingAs(User::factory()->create());
         $data = $this->matchInputs->exclude(['lodging_id']);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
+        $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('lodging_id');
@@ -163,7 +162,7 @@ class GetProfilesRecommendationTest extends TestCase
         Sanctum::actingAs(User::factory()->create());
         $data = $this->matchInputs->invalidate(['lodging_id']);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
+        $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('lodging_id');
@@ -177,7 +176,7 @@ class GetProfilesRecommendationTest extends TestCase
         Sanctum::actingAs(User::factory()->create());
         $data = $this->matchInputs->exclude(['bio']);
 
-        $response = $this->getJson('/api/match/profiles-recommendation' . $data);
+        $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($data));
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('bio');
