@@ -3,9 +3,10 @@
 namespace Tests\Feature\Auth;
 
 use Tests\TestCase;
-use Tests\Util\Auth\Signup\SignupUtil;
 use Tests\Util\DummyFilesystem;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Tests\Util\Auth\SignupAttributes;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SignupTest extends TestCase
@@ -15,13 +16,12 @@ class SignupTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-
         Storage::fake('public');
     }
 
     public function test_user_can_signup(): void
     {
-        $data = SignupUtil::getSignupAttributesWithout([]);
+        $data = (new SignupAttributes)->toArray();
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -42,7 +42,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_name(): void
     {
-        $data = SignupUtil::getSignupAttributesWithout(['name']);
+        $data = (new SignupAttributes)->exclude(['name']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -52,7 +52,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_phone(): void
     {
-        $data = SignupUtil::getSignupAttributesWithout(['phone']);
+        $data = (new SignupAttributes)->exclude(['phone']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -62,7 +62,8 @@ class SignupTest extends TestCase
 
     public function test_signup_require_valid_format_phone(): void
     {
-        $data = SignupUtil::getSignupAttributesInvalidate(['phone']);
+        $invalidFormatPhone = fake()->regexify('/^\+62-08[1-9]{1}\d{1}-{1}\d{4}-\d{2,5}$/');
+        $data = (new SignupAttributes)->replace(['phone' => $invalidFormatPhone]);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -75,7 +76,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_password(): void
     {
-        $data = SignupUtil::getSignupAttributesWithout(['password']);
+        $data = (new SignupAttributes)->exclude(['password']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -85,7 +86,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_birthdate(): void
     {
-        $data = SignupUtil::getSignupAttributesWithout(['birthdate']);
+        $data = (new SignupAttributes)->exclude(['birthdate']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -95,7 +96,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_birthdate_to_be_past_date(): void
     {
-        $data = SignupUtil::getSignupAttributesInvalidate(['birthdate']);
+        $data = (new SignupAttributes)->replace(['birthdate' => now()->toDateString()]);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -108,7 +109,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_gender(): void
     {
-        $data = SignupUtil::getSignupAttributesWithout(['gender']);
+        $data = (new SignupAttributes)->exclude(['gender']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -118,7 +119,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_binary_gender(): void
     {
-        $data = SignupUtil::getSignupAttributesInvalidate(['gender']);
+        $data = (new SignupAttributes)->replace(['gender' => 'non-binary']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -131,7 +132,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_address(): void
     {
-        $data = SignupUtil::getSignupAttributesWithout(['address']);
+        $data = (new SignupAttributes)->exclude(['address']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -141,7 +142,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_bio(): void
     {
-        $data = SignupUtil::getSignupAttributesWithout(['bio']);
+        $data = (new SignupAttributes)->exclude(['bio']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -151,7 +152,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_profile_photo(): void
     {
-        $data = SignupUtil::getSignupAttributesWithout(['profile_photo']);
+        $data = (new SignupAttributes)->exclude(['profile_photo']);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -161,7 +162,13 @@ class SignupTest extends TestCase
 
     public function test_signup_require_profile_photo_to_be_image(): void
     {
-        $data = SignupUtil::getSignupAttributesInvalidate(['profile_photo']);
+        $data = (new SignupAttributes)->replace([
+            'profile_photo' => UploadedFile::fake()->create(
+                'not-image.json',
+                20,
+                'application/json'
+            )
+        ]);
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -174,7 +181,7 @@ class SignupTest extends TestCase
 
     public function test_signup_uploaded_image_exists_in_storage(): void
     {
-        $data = SignupUtil::getSignupAttributesWithout([]);
+        $data = (new SignupAttributes)->toArray();
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -184,10 +191,10 @@ class SignupTest extends TestCase
 
     public function test_signup_return_additional_message_if_image_storage_fails(): void
     {
+        $data = (new SignupAttributes)->toArray();
         Storage::expects('disk')
             ->with('public')
             ->andReturn(new DummyFilesystem);
-        $data = SignupUtil::getSignupAttributesWithout([]);
 
         $response = $this->postJson('/api/signup', $data);
 

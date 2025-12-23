@@ -3,7 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use Tests\TestCase;
-use Tests\Util\Auth\Login\LoginCredentials;
+use Tests\Util\Auth\LoginCredentials;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class LoginTest extends TestCase

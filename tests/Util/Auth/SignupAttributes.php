@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Util\Auth\Signup;
+namespace Tests\Util\Auth;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -28,12 +28,26 @@ class SignupAttributes
         $this->profilePhoto = UploadedFile::fake()->image('profile_photo.jpg');
     }
 
-    public function exclude(array $keys): Collection
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'phone' => $this->phone,
+            'password' => $this->password,
+            'birthdate' => $this->birthdate,
+            'gender' => $this->gender,
+            'address' => $this->address,
+            'bio' => $this->bio,
+            'profile_photo' => $this->profilePhoto,
+        ];
+    }
+
+    public function exclude(array $keys): array
     {
         $attributes = $this->collectAttributes();
         $filteredAttributes = $attributes->except($keys);
         
-        return $filteredAttributes;
+        return $filteredAttributes->toArray();
     }
     
     private function collectAttributes(): Collection
@@ -50,11 +64,11 @@ class SignupAttributes
         ]);
     }
     
-    public function replaceWith(array $data): Collection
+    public function replace(array $data): array
     {   
         $attributes = $this->collectAttributes();
         $replacedAttributes = $attributes->replace($data);
 
-        return $replacedAttributes;
+        return $replacedAttributes->toArray();
     }
 }

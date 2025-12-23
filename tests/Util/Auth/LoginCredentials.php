@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Util\Auth\Login;
+namespace Tests\Util\Auth;
 
 use App\Models\User;
 use Illuminate\Support\Collection;
