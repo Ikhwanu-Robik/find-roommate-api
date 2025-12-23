@@ -11,15 +11,20 @@ use Tests\Util\Match\MatchUtil;
 use Database\Seeders\LodgingSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Util\Match\MatchAssertions;
+use Tests\Util\Match\MatchInputs;
 
 class GetProfilesRecommendationTest extends TestCase
 {
     use RefreshDatabase, MatchAssertions;
 
+    private $matchInputs;
+
     public function setUp(): void
     {
         parent::setUp();
         $this->seed(LodgingSeeder::class);
+
+        $this->matchInputs = new MatchInputs();
     }
 
     public function test_get_profiles_recommendation_require_authentication(): void
@@ -32,7 +37,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_gender(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = MatchUtil::getQueryDataWithout(['gender']);
+        $data = $this->matchInputs->exclude(['gender']);
 
         $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
@@ -43,7 +48,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_binary_gender(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = MatchUtil::getQueryDataInvalidate(['gender']);
+        $data = $this->matchInputs->invalidate(['gender']);
 
         $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
@@ -57,7 +62,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_min_age(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = MatchUtil::getQueryDataWithout(['min_age']);
+        $data = $this->matchInputs->exclude(['min_age']);
 
         $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
@@ -68,7 +73,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_min_age_to_be_integer(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = MatchUtil::getQueryDataWithout(['min_age']);
+        $data = $this->matchInputs->exclude(['min_age']);
         // getQueryInvalidate(['min_age']) can only return a negative integer age
         // so we add invalid "string" age manually
         $data .= '&min_age=some-string';
@@ -85,7 +90,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_min_age_to_be_at_least_17(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = MatchUtil::getQueryDataInvalidate(['min_age']);
+        $data = $this->matchInputs->invalidate(['min_age']);
 
         $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
@@ -99,7 +104,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_max_age(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = MatchUtil::getQueryDataWithout(['max_age']);
+        $data = $this->matchInputs->exclude(['max_age']);
 
         $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
@@ -113,7 +118,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_max_age_to_be_integer(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = MatchUtil::getQueryDataWithout(['max_age']);
+        $data = $this->matchInputs->exclude(['max_age']);
         // getQueryInvalidate(['max_age']) can only return a negative integer age
         // so we add invalid "string" age manually
         $data .= '&max_age=some-string';
@@ -130,7 +135,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_max_age_to_be_greater_than_or_equal_to_min_age(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = MatchUtil::getQueryDataInvalidate(['max_age']);
+        $data = $this->matchInputs->invalidate(['max_age']);
         $minAge = MatchUtil::extractQueryValue($data, 'min_age');
 
         $response = $this->getJson('/api/match/profiles-recommendation' . $data);
@@ -145,7 +150,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_lodging_id(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = MatchUtil::getQueryDataWithout(['lodging_id']);
+        $data = $this->matchInputs->exclude(['lodging_id']);
 
         $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
@@ -156,7 +161,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_lodging_id_to_correspond_to_existing_lodging(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = MatchUtil::getQueryDataInvalidate(['lodging_id']);
+        $data = $this->matchInputs->invalidate(['lodging_id']);
 
         $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
@@ -170,7 +175,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function test_get_profiles_recommendation_require_bio(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = MatchUtil::getQueryDataWithout(['bio']);
+        $data = $this->matchInputs->exclude(['bio']);
 
         $response = $this->getJson('/api/match/profiles-recommendation' . $data);
 
