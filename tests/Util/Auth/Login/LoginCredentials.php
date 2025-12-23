@@ -19,7 +19,7 @@ class LoginCredentials
 
     private function createUser(): User
     {
-        $password = '12345678';
+        $password = fake()->password();
         $user = User::factory()->create([
             'password' => $password
         ]);
@@ -27,12 +27,17 @@ class LoginCredentials
         return $user;
     }
 
-    public function exclude(array $keys): Collection
+    public function getPhone(): string
+    {
+        return $this->phone;
+    }
+
+    public function exclude(array $keys): array
     {
         $credentials = $this->collectAttributes();
         $filteredCredentials = $credentials->except($keys);
 
-        return $filteredCredentials;
+        return $filteredCredentials->toArray();
     }
 
     private function collectAttributes(): Collection
@@ -43,23 +48,11 @@ class LoginCredentials
         ]);
     }
 
-    public function replaceWith(array $data): Collection
+    public function replace(array $data): array
     {   
         $credentials = $this->collectAttributes();
         $replacedCredentials = $credentials->replace($data);
 
-        return $replacedCredentials;
-    }
-
-    public function makeIncorrect(): Collection
-    {
-        $this->setWrongPhone();
-        return $this->collectAttributes();
-    }
-
-    private function setWrongPhone(): void
-    {
-        $otherUser = User::factory()->create();
-        $this->phone = $otherUser->phone;
+        return $replacedCredentials->toArray();
     }
 }
