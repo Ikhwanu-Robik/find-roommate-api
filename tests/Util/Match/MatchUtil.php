@@ -18,25 +18,6 @@ class MatchUtil
         return $birthdate->age;
     }
 
-    public static function extractQueryValue(string $queryString, string $key): string|null
-    {
-        // remove the '?' at the beginning of $queryString
-        $queryString = substr($queryString, 1);
-
-        $items = explode('&', $queryString);
-        $result = null;
-
-        foreach ($items as $item) {
-            [$itemKey, $itemValue] = explode('=', $item);
-            if ($itemKey === $key) {
-                $result = $itemValue;
-                break;
-            }
-        }
-
-        return $result;
-    }
-
     public static function createAttributesFromCriteria(array $criteria): array
     {
         $attributes = self::replaceAgeRangeWithAge($criteria);
