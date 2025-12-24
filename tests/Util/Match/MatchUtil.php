@@ -6,7 +6,7 @@ use Carbon\Carbon;
 
 class MatchUtil
 {
-    public static function getBirthdateWhereAge(int $age)
+    public static function getBirthdateWhereAge(int $age): string
     {
         $birthdate = now()->subYears($age);
         return $birthdate->toDateString();
@@ -18,7 +18,7 @@ class MatchUtil
         return $birthdate->age;
     }
 
-    public static function extractQueryValue(string $queryString, string $key)
+    public static function extractQueryValue(string $queryString, string $key): string|null
     {
         // remove the '?' at the beginning of $queryString
         $queryString = substr($queryString, 1);

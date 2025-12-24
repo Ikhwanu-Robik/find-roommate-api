@@ -4,7 +4,7 @@ namespace Tests\Util\Match;
 
 trait MatchAssertions
 {
-    protected function assertSimilarBio(string $bio1, string $bio2)
+    protected function assertSimilarBio(string $bio1, string $bio2): void
     {
         $tagsGenerator = app()->make('App\Services\TextTagsGenerator');
         $bio1Tags = $tagsGenerator->generate($bio1);

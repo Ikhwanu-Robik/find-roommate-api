@@ -13,7 +13,7 @@ class MatchInputs
         $this->data = $this->createData();
     }
 
-    private function createData()
+    private function createData(): array
     {
         $minAge = fake()->numberBetween(17, 40);
         $maxAge = ++$minAge;
@@ -27,7 +27,7 @@ class MatchInputs
         ];
     }
 
-    public function exclude(array $keys)
+    public function exclude(array $keys): array
     {
         $filteredData = array_diff_key(
             $this->data,
@@ -37,7 +37,7 @@ class MatchInputs
         return $filteredData;
     }
 
-    public function replace(array $data)
+    public function replace(array $data): array
     {
         return array_replace($this->data, $data);
     }
