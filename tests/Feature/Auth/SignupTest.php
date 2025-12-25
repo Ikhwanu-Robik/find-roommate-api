@@ -42,7 +42,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_name(): void
     {
-        $data = (new SignupAttributes)->exclude(['name']);
+        $data = (new SignupAttributes)->exclude(['name'])->toArray();
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -52,7 +52,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_phone(): void
     {
-        $data = (new SignupAttributes)->exclude(['phone']);
+        $data = (new SignupAttributes)->exclude(['phone'])->toArray();
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -63,7 +63,7 @@ class SignupTest extends TestCase
     public function test_signup_require_valid_format_phone(): void
     {
         $invalidFormatPhone = fake()->regexify('/^\+62-08[1-9]{1}\d{1}-{1}\d{4}-\d{2,5}$/');
-        $data = (new SignupAttributes)->replace(['phone' => $invalidFormatPhone]);
+        $data = (new SignupAttributes)->replace(['phone' => $invalidFormatPhone])->toArray();
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -76,7 +76,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_password(): void
     {
-        $data = (new SignupAttributes)->exclude(['password']);
+        $data = (new SignupAttributes)->exclude(['password'])->toArray();
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -86,7 +86,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_birthdate(): void
     {
-        $data = (new SignupAttributes)->exclude(['birthdate']);
+        $data = (new SignupAttributes)->exclude(['birthdate'])->toArray();
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -96,7 +96,8 @@ class SignupTest extends TestCase
 
     public function test_signup_require_birthdate_to_be_past_date(): void
     {
-        $data = (new SignupAttributes)->replace(['birthdate' => now()->toDateString()]);
+        $todayDate = now()->toDateString();
+        $data = (new SignupAttributes)->replace(['birthdate' => $todayDate])->toArray();
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -109,7 +110,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_gender(): void
     {
-        $data = (new SignupAttributes)->exclude(['gender']);
+        $data = (new SignupAttributes)->exclude(['gender'])->toArray();
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -119,7 +120,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_binary_gender(): void
     {
-        $data = (new SignupAttributes)->replace(['gender' => 'non-binary']);
+        $data = (new SignupAttributes)->replace(['gender' => 'non-binary'])->toArray();
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -132,7 +133,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_address(): void
     {
-        $data = (new SignupAttributes)->exclude(['address']);
+        $data = (new SignupAttributes)->exclude(['address'])->toArray();
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -142,7 +143,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_bio(): void
     {
-        $data = (new SignupAttributes)->exclude(['bio']);
+        $data = (new SignupAttributes)->exclude(['bio'])->toArray();
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -152,7 +153,7 @@ class SignupTest extends TestCase
 
     public function test_signup_require_profile_photo(): void
     {
-        $data = (new SignupAttributes)->exclude(['profile_photo']);
+        $data = (new SignupAttributes)->exclude(['profile_photo'])->toArray();
 
         $response = $this->postJson('/api/signup', $data);
 
@@ -162,13 +163,12 @@ class SignupTest extends TestCase
 
     public function test_signup_require_profile_photo_to_be_image(): void
     {
-        $data = (new SignupAttributes)->replace([
-            'profile_photo' => UploadedFile::fake()->create(
+        $jsonFile = UploadedFile::fake()->create(
                 'not-image.json',
                 20,
                 'application/json'
-            )
-        ]);
+            );
+        $data = (new SignupAttributes)->replace(['profile_photo' => $jsonFile])->toArray();
 
         $response = $this->postJson('/api/signup', $data);
 

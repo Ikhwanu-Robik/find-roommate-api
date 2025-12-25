@@ -12,7 +12,7 @@ class LoginTest extends TestCase
 
     public function test_user_can_login_with_correct_credentials(): void
     {
-        $data = (new LoginCredentials)->exclude([]);
+        $data = (new LoginCredentials)->toArray();
 
         $response = $this->postJson('/api/login', $data);
 
@@ -26,7 +26,7 @@ class LoginTest extends TestCase
     {
         $data = new LoginCredentials();
         $otherData = new LoginCredentials();
-        $data = $data->replace(['phone' => $otherData->getPhone()]);
+        $data = $data->replace(['phone' => $otherData->getPhone()])->toArray();
 
         $response = $this->postJson('/api/login', $data);
 
@@ -35,7 +35,7 @@ class LoginTest extends TestCase
 
     public function test_login_require_phone(): void
     {
-        $data = (new LoginCredentials)->exclude(['phone']);
+        $data = (new LoginCredentials)->exclude(['phone'])->toArray();
 
         $response = $this->postJson('/api/login', $data);
 
@@ -45,7 +45,7 @@ class LoginTest extends TestCase
     public function test_login_require_valid_format_phone(): void
     {
         $invalidFormatPhone = fake()->regexify('/^\+62-08[1-9]{1}\d{1}-{1}\d{4}-\d{2,5}$/');
-        $data = (new LoginCredentials)->replace(['phone' => $invalidFormatPhone]);
+        $data = (new LoginCredentials)->replace(['phone' => $invalidFormatPhone])->toArray();
 
         $response = $this->postJson('/api/login', $data);
 
@@ -56,7 +56,7 @@ class LoginTest extends TestCase
 
     public function test_login_require_password(): void
     {
-        $data = (new LoginCredentials)->exclude(['password']);
+        $data = (new LoginCredentials)->exclude(['password'])->toArray();
 
         $response = $this->postJson('/api/login', $data);
 

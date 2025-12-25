@@ -4,17 +4,24 @@ namespace Tests\Util\Auth;
 
 use App\Models\User;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
+use Tests\Util\IDataProvider;
 
-class LoginCredentials
+class LoginCredentials implements IDataProvider
 {
-    private string $phone;
-    private string $password;
+    private $phone;
+    private $password;
+    private $publicAttributes;
 
     public function __construct()
     {
         $user = $this->createUser();
         $this->phone = $user->phone;
         $this->password = $user->passwordPlain;
+        $this->publicAttributes = [
+            'phone',
+            'password'
+        ];
     }
 
     private function createUser(): User
@@ -32,12 +39,20 @@ class LoginCredentials
         return $this->phone;
     }
 
-    public function exclude(array $keys): array
+    public function toArray(): array
     {
-        $credentials = $this->collectAttributes();
-        $filteredCredentials = $credentials->except($keys);
+        return $this->collectAttributes()
+            ->only($this->publicAttributes)->toArray();
+    }
 
-        return $filteredCredentials->toArray();
+    public function exclude(array $keys): static
+    {
+        foreach ($keys as $attr) {
+            $idx = array_search($attr, $this->publicAttributes);
+            unset($this->publicAttributes[$idx]);
+        }
+
+        return $this;
     }
 
     private function collectAttributes(): Collection
@@ -48,11 +63,28 @@ class LoginCredentials
         ]);
     }
 
-    public function replace(array $data): array
-    {   
+    public function replace(array $data): static
+    {
         $credentials = $this->collectAttributes();
         $replacedCredentials = $credentials->replace($data);
+        $this->replaceAttributes($replacedCredentials->toArray());
 
-        return $replacedCredentials->toArray();
+        return $this;
+    }
+
+    private function replaceAttributes(array $replacers): void
+    {
+        foreach ($replacers as $key => $value) {
+            switch ($key) {
+                case 'phone':
+                    $this->phone = $value;
+                    break;
+                case 'password':
+                    $this->password = $value;
+                    break;
+                default:
+                    throw new InvalidArgumentException;
+            }
+        }
     }
 }
