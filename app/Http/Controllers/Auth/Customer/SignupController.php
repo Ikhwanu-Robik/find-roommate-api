@@ -29,9 +29,11 @@ class SignupController extends Controller
         $tags = $tagsGenerator->generate($customerProfile->bio);
         $customerProfile->attachTags($tags);
 
-        $customerUser = $this->combineCustomerAttributes($customerProfile, $user);
+        $response = ['user' => $user->load('profile')];
+        if (!$pathToStoredImage) {
+            $response['message'] = 'Signup successful, but image storage failed. You can try again in the profile menu';
+        }
 
-        $response = $this->createResponse($customerUser, $pathToStoredImage);
         return response()->json($response);
     }
 
@@ -44,28 +46,5 @@ class SignupController extends Controller
         $customerProfile->user()->save($user);
         
         return $customerProfile;
-    }
-
-    private function combineCustomerAttributes($customerProfile, $user)
-    {
-        return collect([
-            'id' => $user->id,
-            'name' => $user->name,
-            'phone' => $user->phone,
-            'gender' => $customerProfile->gender,
-            'birthdate' => $customerProfile->birthdate,
-            'address' => $customerProfile->address,
-            'bio' => $customerProfile->bio,
-            'profile_photo' => $customerProfile->profile_photo,
-        ]);
-    }
-
-    private function createResponse($customerUser, $pathToStoredImage)
-    {
-        $response = ['user' => $customerUser];
-        if (!$pathToStoredImage) {
-            $response['message'] = 'Signup successful, but image storage failed. You can try again in the profile menu';
-        }
-        return $response;
     }
 }
