@@ -2,9 +2,10 @@
 
 namespace Tests\Feature\Auth;
 
+use Mockery\MockInterface;
 use Tests\TestCase;
 use Tests\Util\Auth\Signup\SignupUtil;
-use Tests\Util\DummyFilesystem;
+use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -16,7 +17,7 @@ class SignupTest extends TestCase
     {
         parent::setUp();
 
-        Storage::fake('public');
+        Storage::fake();
     }
 
     public function test_user_can_signup(): void
@@ -179,14 +180,15 @@ class SignupTest extends TestCase
         $response = $this->postJson('/api/signup', $data);
 
         $savedFilePath = $response->json('user.profile_photo');
-        Storage::disk('public')->assertExists($savedFilePath);
+        Storage::assertExists($savedFilePath);
     }
 
     public function test_signup_return_additional_message_if_image_storage_fails(): void
     {
-        Storage::expects('disk')
-            ->with('public')
-            ->andReturn(new DummyFilesystem);
+        $this->mock(FilesystemFactory::class, function (MockInterface $mock) {
+            $mock->expects('disk')->andReturnSelf();
+            $mock->expects('putFileAs')->andReturnFalse();
+        });
         $data = SignupUtil::getSignupAttributesWithout([]);
 
         $response = $this->postJson('/api/signup', $data);
