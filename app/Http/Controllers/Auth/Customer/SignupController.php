@@ -12,8 +12,7 @@ class SignupController extends Controller
 {
     public function __invoke(SignupRequest $request)
     {
-        $profilePhotoFile = $request->file('profile_photo');
-        $pathToStoredImage = Storage::disk('public')->putFile('profile_pics', $profilePhotoFile);
+        $pathToStoredImage = $request->file('profile_photo')->store('profile_pics');
 
         $userAttributes = $request->safe(['name', 'phone', 'password']);
         $user = User::create($userAttributes);
