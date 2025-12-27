@@ -9,9 +9,10 @@ class CustomerProfileFactory extends Factory
 {
     public function definition(): array
     {
+        $gender = fake()->randomElement(['male', 'female']);
         return [
-            'full_name' => fake()->name(),
-            'gender' => fake()->randomElement(['male', 'female']),
+            'full_name' => fake()->name($gender),
+            'gender' => $gender,
             'birthdate' => fake()->date(),
             'address' => fake()->address(),
             'bio' => fake()->realText()
