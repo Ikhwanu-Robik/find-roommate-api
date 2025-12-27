@@ -12,7 +12,7 @@ trait MatchAssertions
 
         $overlapPoint = count(array_intersect($bio1Tags, $bio2Tags));
         
-        $similarityThreshold = config('find_match.similarity_threshold');
+        $similarityThreshold = config('find_match.bio_similarity_threshold');
         $minSameTags = (int) ceil(count($bio1Tags) * $similarityThreshold);
 
         $this->assertGreaterThanOrEqual(

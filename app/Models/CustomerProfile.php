@@ -37,7 +37,7 @@ class CustomerProfile extends Model
         $tagsGenerator = app()->make(TextTagsGenerator::class);
         $tags = $tagsGenerator->generate($bio);
 
-        $similarityThreshold = config('find_match.similarity_threshold');
+        $similarityThreshold = config('find_match.bio_similarity_threshold');
         $minSameTags = (int) ceil(count($tags) * $similarityThreshold);
 
         $builder->whereHas('tags', function (Builder $innerBuilder) use ($tags) {
