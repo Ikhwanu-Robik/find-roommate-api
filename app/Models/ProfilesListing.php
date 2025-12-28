@@ -46,4 +46,12 @@ class ProfilesListing extends Model
             $queryInner->where('gender', $gender);
         });
     }
+
+    #[Scope]
+    protected function whereBioLike(Builder $query, string $bio)
+    {
+        $query->whereHas('customerProfile', function (Builder $queryInner) use ($bio) {
+            $queryInner->whereBioLike($bio);
+        });
+    }
 }

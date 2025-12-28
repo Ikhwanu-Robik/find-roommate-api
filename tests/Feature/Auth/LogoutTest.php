@@ -3,7 +3,8 @@
 namespace Tests\Feature\Auth;
 
 use Tests\TestCase;
-use Tests\Util\Auth\Login\LoginUtil;
+use App\Models\User;
+use Laravel\Sanctum\Sanctum;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class LogoutTest extends TestCase
@@ -12,10 +13,10 @@ class LogoutTest extends TestCase
     
     public function test_user_can_logout(): void
     {
-        $headers = $this->createHeaders();
+        Sanctum::actingAs(User::factory()->create());
         $data = [];
 
-        $logoutResponse = $this->postJson('/api/logout', $data, $headers);
+        $logoutResponse = $this->postJson('/api/logout', $data);
 
         $logoutResponse->assertOk();
     }
@@ -25,20 +26,5 @@ class LogoutTest extends TestCase
         $response = $this->postJson('/api/logout');
 
         $response->assertUnauthorized();
-    }
-
-    private function createHeaders()
-    {
-        $bearerToken = $this->loginAndGetBearerToken();
-        return ['Authorization' => $bearerToken];
-    }
-
-    private function loginAndGetBearerToken()
-    {
-        $loginCredentials = LoginUtil::getLoginCredentialsWithout([]);
-        $loginResponse = $this->postJson('/api/login', $loginCredentials);
-
-        $bearerToken = 'Bearer ' . $loginResponse->json('token');
-        return $bearerToken;
     }
 }

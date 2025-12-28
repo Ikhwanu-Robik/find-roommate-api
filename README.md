@@ -51,7 +51,20 @@ DB_PORT=3306
 DB_DATABASE=find_roommate
 DB_USERNAME=root
 DB_PASSWORD=
+
+TAGS_GENERATOR_API_URL=https://tags-generator.org/generate.php
 ```
+
+---
+
+**What is Tags Generator API❓**
+
+it is an api with a POST endpoint that accept a data with "text" key.
+In this application, the "text" key is the user's bio.
+Given that input, the API will return an array of "tags" that are the topics of the "text".
+See [this](https://github.com/Ikhwanu-Robik/tags-generator-api) for reference
+
+---
 
 Then generate the application key:
 

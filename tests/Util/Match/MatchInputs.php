@@ -3,72 +3,96 @@
 namespace Tests\Util\Match;
 
 use App\Models\Lodging;
-use Tests\Util\Match\InvalidData;
+use InvalidArgumentException;
+use Tests\Util\IDataProvider;
+use Illuminate\Support\Collection;
 
-class MatchInputs
+class MatchInputs implements IDataProvider
 {
-    private $data;
-    private $invalidData;
+    private $gender;
+    private $minAge;
+    private $maxAge;
+    private $lodgingId;
+    private $bio;
+    private $publicAttributes;
 
     public function __construct()
-    {
-        $this->data = $this->createData();
-        $this->invalidData = new InvalidData();
-    }
-
-    private function createData()
     {
         $minAge = fake()->numberBetween(17, 40);
         $maxAge = ++$minAge;
 
-        return [
-            'gender' => fake()->randomElement(['male', 'female']),
-            'min_age' => $minAge,
-            'max_age' => $maxAge,
-            'lodging_id' => Lodging::get()->random(1)->first()->id,
-            'bio' => fake()->realText(),
+        $this->gender = fake()->randomElement(['male', 'female']);
+        $this->minAge = $minAge;
+        $this->maxAge = $maxAge;
+        $this->lodgingId = Lodging::get()->random(1)->first()->id;
+        $this->bio = fake()->realText();
+        $this->publicAttributes = [
+            'gender',
+            'min_age',
+            'max_age',
+            'lodging_id',
+            'bio'
         ];
     }
 
-    public function exclude(array $exclusions)
+    private function collectAttributes(): Collection
     {
-        $filteredData = array_diff_key(
-            $this->data,
-            array_flip($exclusions)
-        );
-
-        return $this->formatAsQuery($filteredData);
+        return collect([
+            'gender' => $this->gender,
+            'min_age' => $this->minAge,
+            'max_age' => $this->maxAge,
+            'lodging_id' => $this->lodgingId,
+            'bio' => $this->bio
+        ]);
     }
 
-    public function invalidate(array $keysToInvalidate)
+    public function toArray(): array
     {
-        $filteredInvalidData = $this->invalidData->filterByKeys($keysToInvalidate);
-        $dataWithInvalids = $this->replaceWithInvalid($filteredInvalidData);
-
-        return $this->formatAsQuery($dataWithInvalids);
+        return $this->collectAttributes()
+            ->only($this->publicAttributes)->toArray();
     }
 
-    private function replaceWithInvalid($invalids)
+    public function exclude(array $keys): static
     {
-        foreach ($invalids as $key => $value) {
-            $this->data[$key] = $value;
-        }
-        return $this->data;
-    }
-
-    private function formatAsQuery(array $assocArr)
-    {
-        $queryString = "?";
-
-        foreach ($assocArr as $key => $value) {
-            $pair = $key . "=" . $value;
-            $queryString .= $pair;
-            $queryString .= '&';
+        foreach ($keys as $attr) {
+            $idx = array_search($attr, $this->publicAttributes);
+            unset($this->publicAttributes[$idx]);
         }
 
-        // remove trailing &
-        $queryString = substr($queryString, 0, strlen($queryString) - 1);
+        return $this;
+    }
 
-        return $queryString;
+    public function replace(array $data): static
+    {
+        $inputs = $this->collectAttributes();
+        $replacedInputs = $inputs->replace($data);
+        $this->replaceAttributes($replacedInputs->toArray());
+
+        return $this;
+    }
+
+    private function replaceAttributes(array $replacers): void
+    {
+        foreach ($replacers as $key => $value) {
+            switch ($key) {
+                case 'gender':
+                    $this->gender = $value;
+                    break;
+                case 'min_age':
+                    $this->minAge = $value;
+                    break;
+                case 'max_age':
+                    $this->maxAge = $value;
+                    break;
+                case 'lodging_id':
+                    $this->lodgingId = $value;
+                    break;
+                case 'bio':
+                    $this->bio = $value;
+                    break;
+                default:
+                    throw new InvalidArgumentException;
+            }
+        }
     }
 }

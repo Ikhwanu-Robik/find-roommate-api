@@ -5,15 +5,14 @@ namespace App\Http\Controllers\Auth\Customer;
 use App\Models\CustomerProfile;
 use App\Models\User;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Auth\SignupRequest;
+use App\Services\TextTagsGenerator;
 
 class SignupController extends Controller
 {
-    public function __invoke(SignupRequest $request)
+    public function __invoke(SignupRequest $request, TextTagsGenerator $tagsGenerator)
     {
-        $profilePhotoFile = $request->file('profile_photo');
-        $pathToStoredImage = Storage::disk('public')->putFile('profile_pics', $profilePhotoFile);
+        $pathToStoredImage = $request->file('profile_photo')->store('profile_pics');
 
         $userAttributes = $request->safe(['name', 'phone', 'password']);
         $user = User::create($userAttributes);
@@ -25,9 +24,14 @@ class SignupController extends Controller
             $pathToStoredImage
         );
 
-        $customerUser = $this->combineCustomerAttributes($customerProfile, $user);
+        $tags = $tagsGenerator->generate($customerProfile->bio);
+        $customerProfile->attachTags($tags);
 
-        $response = $this->createResponse($customerUser, $pathToStoredImage);
+        $response = ['user' => $user->load('profile')];
+        if (!$pathToStoredImage) {
+            $response['message'] = 'Signup successful, but image storage failed. You can try again in the profile menu';
+        }
+
         return response()->json($response);
     }
 
@@ -40,28 +44,5 @@ class SignupController extends Controller
         $customerProfile->user()->save($user);
         
         return $customerProfile;
-    }
-
-    private function combineCustomerAttributes($customerProfile, $user)
-    {
-        return collect([
-            'id' => $user->id,
-            'name' => $user->name,
-            'phone' => $user->phone,
-            'gender' => $customerProfile->gender,
-            'birthdate' => $customerProfile->birthdate,
-            'address' => $customerProfile->address,
-            'bio' => $customerProfile->bio,
-            'profile_photo' => $customerProfile->profile_photo,
-        ]);
-    }
-
-    private function createResponse($customerUser, $pathToStoredImage)
-    {
-        $response = ['user' => $customerUser];
-        if (!$pathToStoredImage) {
-            $response['message'] = 'Signup successful, but image storage failed. You can try again in the profile menu';
-        }
-        return $response;
     }
 }
