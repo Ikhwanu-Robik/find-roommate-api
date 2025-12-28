@@ -1,7 +1,6 @@
-# Colivers - Find Roommate
+# Find Roommate API
 
-Colivers is a platform to find roommates.
-This is the Backend API.
+An API for a platform to help find roommates with whom you can share your rent with.
 
 <!-- # Documentation -->
 
@@ -10,8 +9,8 @@ This is the Backend API.
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Ikhwanu-Robik/Colivers-API.git
-cd Colivers-API
+git clone https://github.com/Ikhwanu-Robik/find-roommate-api.git
+cd find-roommate-api
 ```
 
 ---
@@ -43,13 +42,13 @@ cp .env.example .env
 Then, open `.env` and set your environment variables:
 
 ```dotenv
-APP_NAME="Colivers - Find Roommate"
+APP_NAME="Find Roommate"
 APP_URL=http://127.0.0.1:8000
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=colivers
+DB_DATABASE=find_roommate
 DB_USERNAME=root
 DB_PASSWORD=
 

@@ -20,6 +20,7 @@ class MatchController extends Controller
         ])->first();
         $matchingProfiles = $matchingProfiles->except([$userProfileInListing->id]);
 
+
         $matchingProfiles->sortBy('id');
 
         return response()->json([

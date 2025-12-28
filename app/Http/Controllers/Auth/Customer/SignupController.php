@@ -5,16 +5,14 @@ namespace App\Http\Controllers\Auth\Customer;
 use App\Models\CustomerProfile;
 use App\Models\User;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Auth\SignupRequest;
-use App\Services\TextTagsGenerator as TagsGenerator;
+use App\Services\TextTagsGenerator;
 
 class SignupController extends Controller
 {
-    public function __invoke(SignupRequest $request, TagsGenerator $tagsGenerator)
+    public function __invoke(SignupRequest $request, TextTagsGenerator $tagsGenerator)
     {
-        $profilePhotoFile = $request->file('profile_photo');
-        $pathToStoredImage = Storage::disk('public')->putFile('profile_pics', $profilePhotoFile);
+        $pathToStoredImage = $request->file('profile_photo')->store('profile_pics');
 
         $userAttributes = $request->safe(['name', 'phone', 'password']);
         $user = User::create($userAttributes);
