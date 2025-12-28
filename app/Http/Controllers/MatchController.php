@@ -27,7 +27,7 @@ class MatchController extends Controller
             ->where('lodging_id', $requestData['lodging_id'])
             ->with(['customerProfile', 'lodging'])->get();
 
-        $matchingProfiles->except($userInListing->toArray());
+        $matchingProfiles = $matchingProfiles->except([$userInListing->id]);
         $matchingProfiles->sortBy('id');
 
         return response()->json([

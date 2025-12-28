@@ -221,4 +221,40 @@ class GetProfilesRecommendationTest extends TestCase
         $this->assertGreaterThanOrEqual($criteria['min_age'], $age);
         $this->assertLessThanOrEqual($criteria['max_age'], $age);
     }
+
+    public function test_profiles_recommendation_doesnt_include_self(): void
+    {   
+        // create the profiles that should be returned by the API
+        $criteria = ['min_age' => 17, 'max_age' => 27, 'gender' => 'male', 'lodging_id' => 1, 'bio' => 'i use arch btw'];
+        $expectedAttributes = MatchUtil::createAttributesFromCriteria($criteria);
+        $expectedProfiles = CustomerProfile::factory()->tagged()->create($expectedAttributes);
+
+        // create the user making the request
+        // with an expected attribute, so this user will also
+        // be included in the recommendations if someting goes wrong
+        $customerProfile = CustomerProfile::factory()->tagged()->create($expectedAttributes);
+        $user = User::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        // create the profiles that should NOT be returned by the API
+        $nonCriteria = ['min_age' => 28, 'max_age' => 34, 'gender' => 'female', 'lodging_id' => 2, 'bio' => 'i use windows 11'];
+        $unexpectedAttributes = MatchUtil::createAttributesFromCriteria($nonCriteria);
+        $unexpectedProfiles = CustomerProfile::factory()->tagged()->create($unexpectedAttributes);
+
+        // putting the profiles in match's profiles listing
+        ProfilesListing::create([
+            'customer_profile_id' => $expectedProfiles->id,
+            'lodging_id' => $criteria['lodging_id']
+        ]);
+        ProfilesListing::create([
+            'customer_profile_id' => $unexpectedProfiles->id,
+            'lodging_id' => $nonCriteria['lodging_id']
+        ]);
+
+        $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($criteria));
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'matching_profiles');
+    }
 }
