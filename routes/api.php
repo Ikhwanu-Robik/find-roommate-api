@@ -14,4 +14,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/match/profiles-recommendation', [MatchController::class, 'getProfilesRecommendation'])
         ->name('match.get-profile-recommendation');
+
+    Route::post('/listing', [MatchController::class, 'joinListing'])
+        ->name('match.join-listing');
 });

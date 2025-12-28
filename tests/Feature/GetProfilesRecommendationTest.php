@@ -4,14 +4,15 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\User;
+use App\Models\Lodging;
 use Laravel\Sanctum\Sanctum;
 use App\Models\CustomerProfile;
 use App\Models\ProfilesListing;
 use Tests\Util\Match\MatchUtil;
-use Database\Seeders\LodgingSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Util\Match\MatchAssertions;
 use Tests\Util\Match\MatchInputs;
+use Database\Seeders\LodgingSeeder;
+use Tests\Util\Match\MatchAssertions;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class GetProfilesRecommendationTest extends TestCase
 {
@@ -183,6 +184,11 @@ class GetProfilesRecommendationTest extends TestCase
         $user = User::factory()->create();
         $customerProfile->user()->save($user);
         Sanctum::actingAs($user);
+        // mock joining listing
+        ProfilesListing::create([
+            'customer_profile_id' => $customerProfile->id,
+            'lodging_id' => Lodging::all()->random()->id
+        ]);
 
         // create the profiles that should be returned by the API
         $criteria = ['min_age' => 17, 'max_age' => 27, 'gender' => 'male', 'lodging_id' => 1, 'bio' => 'i use arch btw'];
@@ -208,7 +214,7 @@ class GetProfilesRecommendationTest extends TestCase
 
         $response->assertOk();
         $response->assertJsonCount(1, 'matching_profiles');
-        
+
         $profileInListing = $response->json('matching_profiles')[0];
         $profile = $profileInListing['customer_profile'];
 
@@ -223,7 +229,7 @@ class GetProfilesRecommendationTest extends TestCase
     }
 
     public function test_profiles_recommendation_doesnt_include_self(): void
-    {   
+    {
         // create the profiles that should be returned by the API
         $criteria = ['min_age' => 17, 'max_age' => 27, 'gender' => 'male', 'lodging_id' => 1, 'bio' => 'i use arch btw'];
         $expectedAttributes = MatchUtil::createAttributesFromCriteria($criteria);
@@ -236,6 +242,11 @@ class GetProfilesRecommendationTest extends TestCase
         $user = User::factory()->create();
         $customerProfile->user()->save($user);
         Sanctum::actingAs($user);
+        // mock joining listing
+        ProfilesListing::create([
+            'customer_profile_id' => $customerProfile->id,
+            'lodging_id' => Lodging::all()->random()->id
+        ]);
 
         // create the profiles that should NOT be returned by the API
         $nonCriteria = ['min_age' => 28, 'max_age' => 34, 'gender' => 'female', 'lodging_id' => 2, 'bio' => 'i use windows 11'];
