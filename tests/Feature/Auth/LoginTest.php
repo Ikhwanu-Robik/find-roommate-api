@@ -3,7 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use Tests\TestCase;
-use Tests\Util\Auth\Login\LoginUtil;
+use Tests\Util\Auth\LoginCredentials;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class LoginTest extends TestCase
@@ -12,7 +12,7 @@ class LoginTest extends TestCase
 
     public function test_user_can_login_with_correct_credentials(): void
     {
-        $data = LoginUtil::getLoginCredentialsWithout([]);
+        $data = (new LoginCredentials)->toArray();
 
         $response = $this->postJson('/api/login', $data);
 
@@ -24,7 +24,9 @@ class LoginTest extends TestCase
 
     public function test_user_cannot_login_with_incorrect_credentials(): void
     {
-        $data = LoginUtil::getIncorrectLoginData();
+        $data = new LoginCredentials();
+        $otherData = new LoginCredentials();
+        $data = $data->replace(['phone' => $otherData->getPhone()])->toArray();
 
         $response = $this->postJson('/api/login', $data);
 
@@ -33,7 +35,7 @@ class LoginTest extends TestCase
 
     public function test_login_require_phone(): void
     {
-        $data = LoginUtil::getLoginCredentialsWithout(['phone']);
+        $data = (new LoginCredentials)->exclude(['phone'])->toArray();
 
         $response = $this->postJson('/api/login', $data);
 
@@ -42,7 +44,8 @@ class LoginTest extends TestCase
 
     public function test_login_require_valid_format_phone(): void
     {
-        $data = LoginUtil::getLoginCredentialsInvalidate(['phone']);
+        $invalidFormatPhone = fake()->regexify('/^\+62-08[1-9]{1}\d{1}-{1}\d{4}-\d{2,5}$/');
+        $data = (new LoginCredentials)->replace(['phone' => $invalidFormatPhone])->toArray();
 
         $response = $this->postJson('/api/login', $data);
 
@@ -53,7 +56,7 @@ class LoginTest extends TestCase
 
     public function test_login_require_password(): void
     {
-        $data = LoginUtil::getLoginCredentialsWithout(['password']);
+        $data = (new LoginCredentials)->exclude(['password'])->toArray();
 
         $response = $this->postJson('/api/login', $data);
 

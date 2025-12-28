@@ -2,44 +2,46 @@
 
 namespace Tests\Util\Match;
 
-use Tests\Util\Match\MatchInputs;
+use Carbon\Carbon;
 
 class MatchUtil
 {
-    public static function getQueryDataWithout(array $exclusions)
-    {
-        $queryData = new MatchInputs();
-        return $queryData->exclude($exclusions);
-    }
-
-    public static function getQueryDataInvalidate(array $keysToInvalidate)
-    {
-        $queryData = new MatchInputs();
-        return $queryData->invalidate($keysToInvalidate);
-    }
-
-    public static function getBirthdateWhereAge(int $age)
+    public static function getBirthdateWhereAge(int $age): string
     {
         $birthdate = now()->subYears($age);
         return $birthdate->toDateString();
     }
 
-    public static function extractQueryValue(string $queryString, string $key)
+    public static function birthdateToAge(string $birthdate): int
     {
-        // remove the '?' at the beginning of $queryString
-        $queryString = substr($queryString, 1);
+        $birthdate = Carbon::create($birthdate);
+        return $birthdate->age;
+    }
 
-        $items = explode('&', $queryString);
-        $result = null;
+    public static function createAttributesFromCriteria(array $criteria): array
+    {
+        $attributes = self::replaceAgeRangeWithAge($criteria);
+        $attributes = self::replaceAgeWithBirthdate($attributes);
+        unset($attributes['lodging_id']);
+        return $attributes;
+    }
 
-        foreach ($items as $item) {
-            [$itemKey, $itemValue] = explode('=', $item);
-            if ($itemKey === $key) {
-                $result = $itemValue;
-                break;
-            }
-        }
+    private static function replaceAgeRangeWithAge(array $attributes): array
+    {
+        $age = fake()->numberBetween($attributes['min_age'], $attributes['max_age']);
+        $attributes['age'] = $age;
 
-        return $result;
+        unset($attributes['min_age'], $attributes['max_age']);
+
+        return $attributes;
+    }
+
+    private static function replaceAgeWithBirthdate(array $properties): array
+    {
+        $birthdate = self::getBirthdateWhereAge($properties['age']);
+        unset($properties['age']);
+        $properties['birthdate'] = $birthdate;
+
+        return $properties;
     }
 }

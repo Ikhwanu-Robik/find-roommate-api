@@ -4,7 +4,7 @@ namespace Tests\Util;
 
 class DummyFilesystem
 {
-    public function putFile($path, $file, $options = [])
+    public function putFile($path, $file, $options = []): bool
     {
         return false;
     }
