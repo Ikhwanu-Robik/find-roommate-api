@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Event;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\User;
 use App\Events\NewChat;
@@ -11,6 +12,8 @@ use App\Models\CustomerProfile;
 
 class ChatRoomTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -34,18 +37,18 @@ class ChatRoomTest extends TestCase
     public function test_user_can_send_message_to_chat_room(): void
     {
         Event::fake();
-        
+
         $user = User::factory()->create();
         $this->actingAs($user);
         $customerProfile = CustomerProfile::factory()->create();
         $customerProfile->user()->save($user);
-        
+
         $chatRoom = ChatRoom::factory()->create();
         $chatRoom->customerProfiles()->saveMany([
             $customerProfile,
             CustomerProfile::factory()->create()
         ]);
-        
+
         $response = $this->postJson('/api/chat-rooms/' . $chatRoom->id . '/chats', [
             'message' => 'Hello World'
         ]);
@@ -54,5 +57,25 @@ class ChatRoomTest extends TestCase
         Event::assertDispatched(NewChat::class, function (NewChat $event) {
             return $event->message == 'Hello World';
         });
+    }
+
+    public function test_user_must_be_invited_to_send_message_to_chat_room(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+
+        $chatRoom = ChatRoom::factory()->create();
+        $chatRoom->customerProfiles()->saveMany([
+            CustomerProfile::factory()->create(),
+            CustomerProfile::factory()->create()
+        ]);
+
+        $response = $this->postJson('/api/chat-rooms/' . $chatRoom->id . '/chats', [
+            'message' => 'Hello World'
+        ]);
+
+        $response->assertForbidden();
     }
 }
