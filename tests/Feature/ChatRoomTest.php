@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use Event;
 use Tests\TestCase;
 use App\Models\User;
+use App\Events\NewChat;
 use App\Models\ChatRoom;
 use App\Models\CustomerProfile;
 
@@ -29,67 +31,28 @@ class ChatRoomTest extends TestCase
         $this->assertNotEmpty($response->json('chat_room_id'));
     }
 
-    public function test_user_can_join_to_chat_room_with_invitation(): void
+    public function test_user_can_send_message_to_chat_room(): void
     {
+        Event::fake();
+        
         $user = User::factory()->create();
         $this->actingAs($user);
         $customerProfile = CustomerProfile::factory()->create();
         $customerProfile->user()->save($user);
-
+        
         $chatRoom = ChatRoom::factory()->create();
         $chatRoom->customerProfiles()->saveMany([
             $customerProfile,
             CustomerProfile::factory()->create()
         ]);
+        
+        $response = $this->postJson('/api/chat-rooms/' . $chatRoom->id . '/chats', [
+            'message' => 'Hello World'
+        ]);
 
-        // $response = $this->postJson('/api/broadcast/auth');
-        // $response->assertOk();
-
-        // $response = $this->websocket('ChatRooms.' . $chatRoom->id);
-        // $response->assertConnected();
+        $response->assertOk();
+        Event::assertDispatched(NewChat::class, function (NewChat $event) {
+            return $event->message == 'Hello World';
+        });
     }
-
-    // public function test_user_cannot_join_to_chat_room_without_invitation(): void
-    // {
-    //     // create the user making the request
-    //     $user = User::factory()->create();
-    //     $this->actingAs($user);
-    //     $customerProfile = CustomerProfile::factory()->create();
-    //     $customerProfile->user()->save($user);
-
-    //     // create a chat room without inviting
-    //     // the user making the request
-    //     $chatRoom = ChatRoom::factory()->hasProfiles(
-    //         CustomerProfile::factory()->create(),
-    //         CustomerProfile::factory()->create()
-    //     )->create();
-
-    //     $response = $this->getJson('/api/match/chat-rooms/' . $chatRoom->id);
-
-    //     $response->assertUnauthorized();
-    // }
-
-    // // how can I test the websocket broadcasting?
-    // public function test_user_can_sent_a_chat_in_chat_room(): void
-    // {
-    //     $user = User::factory()->create();
-    //     $this->actingAs($user);
-    //     $customerProfile = CustomerProfile::factory()->create();
-    //     $customerProfile->user()->save($user);
-    //     $chatRoom = ChatRoom::factory()->hasProfiles(
-    //         $customerProfile,
-    //         CustomerProfile::factory()->create()
-    //     )->create();
-    //     Event::fake();
-
-    //     $response = $this->postJson('/api/match/chat-rooms/' . $chatRoom->id . '/chat');
-
-    //     $response->assertOk();
-    //     Event::assertDispatched(SendingChat::class);
-    // }
-
-    // public function test_chat_has_online_status(): void
-    // {
-
-    // }
 }
