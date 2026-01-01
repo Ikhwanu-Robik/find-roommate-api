@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\JoinListingRequest;
+use App\Events\NewChat;
+use App\Models\ChatRoom;
+use Illuminate\Http\Request;
 use App\Models\CustomerProfile;
 use App\Models\ProfilesListing;
+use App\Http\Requests\JoinListingRequest;
 use App\Http\Requests\GetProfilesRecommendationRequest as GetProfilesRecRequest;
 
 class MatchController extends Controller
@@ -19,7 +22,6 @@ class MatchController extends Controller
             'customer_profile_id' => $userCustomerProfile->id
         ])->first();
         $matchingProfiles = $matchingProfiles->except([$userProfileInListing->id]);
-
 
         $matchingProfiles->sortBy('id');
 
@@ -81,5 +83,33 @@ class MatchController extends Controller
         ]);
 
         return $profileInListing;
+    }
+
+    public function initiateChatRoom(Request $request, CustomerProfile $customerProfile)
+    {
+        $initiatorProfile = $request->user()->profile;
+        $targetProfile = $customerProfile;
+        $chatRoom = ChatRoom::create();
+        $chatRoom->customerProfiles()->save($initiatorProfile);
+        $chatRoom->customerProfiles()->save($targetProfile);
+
+        return response()->json([
+            'chat_room_id' => $chatRoom->id
+        ]);
+    }
+
+    public function sendChat(Request $request, ChatRoom $chatRoom)
+    {
+        $validated = $request->validate([
+            'message' => ['required', 'string'],
+        ]);
+        $sender = $request->user()->profile;
+        if (! $chatRoom->isInviting($sender)) {
+            return response()->json([], 403);
+        }
+
+        $message = $validated['message'];
+        
+        NewChat::dispatch($chatRoom, $sender, $message);
     }
 }

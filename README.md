@@ -97,3 +97,11 @@ php artisan migrate
 ```bash
 php artisan serve
 ```
+
+#### 🖥️ Start the reverb server and queue worker for chat feature
+
+```bash
+php artisan reverb:start
+
+php artisan queue:work
+```

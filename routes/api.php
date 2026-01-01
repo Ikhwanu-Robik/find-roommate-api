@@ -17,4 +17,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/listing', [MatchController::class, 'joinListing'])
         ->name('match.join-listing');
+
+    Route::post('/match/profiles/{customerProfile}/chat', [MatchController::class, 'initiateChatRoom'])
+        ->name('match.invite-to-chat-room');
+
+    Route::post('/chat-rooms/{chatRoom}/chats', [MatchController::class, 'sendChat'])
+        ->name('chat-room.send-message');
 });
