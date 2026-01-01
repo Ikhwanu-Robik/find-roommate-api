@@ -54,8 +54,8 @@ class ChatRoomTest extends TestCase
         ]);
 
         $response->assertOk();
-        Event::assertDispatched(NewChat::class, function (NewChat $event) {
-            return $event->message == 'Hello World';
+        Event::assertDispatched(NewChat::class, function (NewChat $event) use ($customerProfile) {
+            return $event->message == 'Hello World' && $event->sender->is($customerProfile);
         });
     }
 

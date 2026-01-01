@@ -103,12 +103,13 @@ class MatchController extends Controller
         $validated = $request->validate([
             'message' => ['required', 'string'],
         ]);
-        if (! $chatRoom->isInviting($request->user()->profile)) {
+        $sender = $request->user()->profile;
+        if (! $chatRoom->isInviting($sender)) {
             return response()->json([], 403);
         }
 
         $message = $validated['message'];
         
-        NewChat::dispatch($chatRoom, $message);
+        NewChat::dispatch($chatRoom, $sender, $message);
     }
 }

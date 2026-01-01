@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\ChatRoom;
+use App\Models\CustomerProfile;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -15,6 +16,7 @@ class NewChat implements ShouldBroadcast
 
     public function __construct(
         private ChatRoom $chatRoom,
+        public CustomerProfile $sender,
         public string $message
     ) {
         //
