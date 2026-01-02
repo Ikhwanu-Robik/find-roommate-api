@@ -21,7 +21,9 @@ class MatchController extends Controller
         $userProfileInListing = ProfilesListing::where([
             'customer_profile_id' => $userCustomerProfile->id
         ])->first();
-        $matchingProfiles = $matchingProfiles->except([$userProfileInListing->id]);
+        if ($userProfileInListing) {
+           $matchingProfiles = $matchingProfiles->except([$userProfileInListing->id]);
+        }
 
         $matchingProfiles->sortBy('id');
 
