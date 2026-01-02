@@ -49,6 +49,8 @@ class JoinListingTest extends TestCase
         $profileInListing = $response->json('profile_in_listing');
         // unsetting these attributes because they have are casted
         unset($profileInListing['created_at'], $profileInListing['updated_at']);
+        // also unset this because assertDatabaseHas doesn't account for relation
+        unset($profileInListing['customer_profile']);
         $this->assertDatabaseHas(ProfilesListing::class, $profileInListing);
     }
 

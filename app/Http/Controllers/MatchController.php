@@ -70,6 +70,7 @@ class MatchController extends Controller
     private function updateProfileInListing(CustomerProfile $customerProfile, int $lodgingId)
     {
         $profileInListing = ProfilesListing::where('customer_profile_id', $customerProfile->id)
+            ->with('customerProfile')
             ->first();
         $profileInListing->lodging_id = $lodgingId;
         $profileInListing->save();
@@ -84,7 +85,7 @@ class MatchController extends Controller
             'lodging_id' => $lodgingId
         ]);
 
-        return $profileInListing;
+        return $profileInListing->load('customerProfile');
     }
 
     public function initiateChatRoom(Request $request, CustomerProfile $customerProfile)
@@ -107,7 +108,10 @@ class MatchController extends Controller
         ]);
         $sender = $request->user()->profile;
         if (! $chatRoom->isInviting($sender)) {
-            return response()->json([], 403);
+           return response()->json(
+              ['message' => 'You are not invited to this chat room'],
+              403
+           );
         }
 
         $message = $validated['message'];

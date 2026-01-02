@@ -19,7 +19,7 @@ class LoginController extends Controller
 
     private function attemptLogin(array $credentials)
     {
-        $user = User::where('phone', $credentials['phone'])->first();
+        $user = User::where('phone', $credentials['phone'])->with('profile')->first();
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
             abort(401, 'The credentials do not match our record');
