@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\CustomerProfileController;
 use App\Http\Controllers\Auth\Customer\SignupController;
 
 Route::post('/signup', SignupController::class)->name('signup');
@@ -23,4 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/chat-rooms/{chatRoom}/chats', [MatchController::class, 'sendChat'])
         ->name('chat-room.send-message');
+
+    Route::put('/profiles/{customerProfile}', [CustomerProfileController::class, 'update'])
+        ->name('customer-profiles.update');
 });
