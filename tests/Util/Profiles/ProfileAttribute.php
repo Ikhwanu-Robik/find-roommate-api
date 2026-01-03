@@ -11,6 +11,7 @@ class ProfileAttribute implements IDataProvider
     private $fullName;
     private $gender;
     private $birthdate;
+    private $address;
     private $publicAttributes;
 
     public function __construct()
@@ -18,11 +19,13 @@ class ProfileAttribute implements IDataProvider
         $this->fullName = fake()->name();
         $this->gender = fake()->randomElement(['male', 'female']);
         $this->birthdate = fake()->date();
+        $this->address = fake()->address();
 
         $this->publicAttributes = [
             'full_name',
             'gender',
             'birthdate',
+            'address',
         ];
     }
 
@@ -39,6 +42,7 @@ class ProfileAttribute implements IDataProvider
             'full_name' => $this->fullName,
             'gender' => $this->gender,
             'birthdate' => $this->birthdate,
+            'address' => $this->address,
         ]);
     }
 
@@ -79,6 +83,9 @@ class ProfileAttribute implements IDataProvider
                     break;
                 case 'birthdate':
                     $this->birthdate = $value;
+                    break;
+                case 'address':
+                    $this->address = $value;
                     break;
                 default:
                     throw new InvalidArgumentException;

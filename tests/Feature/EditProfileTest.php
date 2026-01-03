@@ -124,4 +124,24 @@ class EditProfileTest extends TestCase
         $response->assertOnlyJsonValidationErrors(['gender']);
     }
 
+    public function test_can_edit_profile_address(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $data = (new ProfileAttribute)->only(['address'])->toArray();
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertOk();
+
+        $oldAddress = $customerProfile->address;
+        $newAddress = CustomerProfile::find($customerProfile->id)->address;
+        $this->assertNotSame(
+            $oldAddress,
+            $newAddress
+        );
+    }
 }
