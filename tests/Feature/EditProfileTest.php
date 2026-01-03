@@ -157,4 +157,26 @@ class EditProfileTest extends TestCase
             $newAddress
         );
     }
+
+    public function test_can_edit_profile_bio(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $data = (new ProfileAttribute)->only(['bio'])->toArray();
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertOk();
+
+        $oldBio = $customerProfile->bio;
+        $newBio = CustomerProfile::find($customerProfile->id)->bio;
+        $this->assertNotSame(
+            $oldBio,
+            $newBio
+        );
+    }
+
 }

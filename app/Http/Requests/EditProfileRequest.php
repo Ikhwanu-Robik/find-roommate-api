@@ -26,6 +26,7 @@ class EditProfileRequest extends FormRequest
                 new PastDate,
             ],
             'address' => 'sometimes',
+            'bio' => 'sometimes',
         ];
     }
 }
