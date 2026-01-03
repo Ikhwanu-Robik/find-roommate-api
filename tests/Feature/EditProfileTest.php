@@ -13,6 +13,19 @@ class EditProfileTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_edit_profile_require_authentication(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        
+        $data = (new ProfileAttribute)->toArray();
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertUnauthorized();
+    }
+
     public function test_user_cant_edit_other_users_profile(): void
     {
         $user = User::factory()->create();
