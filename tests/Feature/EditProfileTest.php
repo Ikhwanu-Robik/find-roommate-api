@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
 use App\Models\User;
+use Laravel\Sanctum\Sanctum;
 use App\Models\CustomerProfile;
 use Tests\Util\Profiles\ProfileAttribute;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class EditProfileTest extends TestCase
 {
@@ -18,7 +18,7 @@ class EditProfileTest extends TestCase
         $user = User::factory()->create();
         $customerProfile = CustomerProfile::factory()->create();
         $customerProfile->user()->save($user);
-        
+
         $data = (new ProfileAttribute)->toArray();
 
         $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
@@ -179,4 +179,30 @@ class EditProfileTest extends TestCase
         );
     }
 
+    public function test_editing_profile_bio_also_update_profile_tags(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()
+            ->tagged()->create(['bio' => 'i use arch btw']);
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $oldTags = $customerProfile->tags;
+
+        // making sure that the replacing bio has different tags
+        $replacingBio = 'i use windows 11';
+        $data = (new ProfileAttribute)->replace(['bio' => $replacingBio])->toArray();
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertOk();
+        $newTags = CustomerProfile::find($customerProfile->id)->tags;
+
+        // json_encode is used because i deem
+        // collection comparison potentially misleading
+        $this->assertNotSame(
+            json_encode($oldTags),
+            json_encode($newTags)
+        );
+    }
 }
