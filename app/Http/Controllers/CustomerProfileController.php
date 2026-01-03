@@ -14,5 +14,15 @@ class CustomerProfileController extends Controller
                 'message' => 'You can only edit your own profile'
             ], 403);
         }
+
+        $validated = $request->validate([
+            'full_name' => 'sometimes',
+        ]);
+
+        $customerProfile->update($validated);
+
+        return response()->json([
+            'customer_profile' => $customerProfile
+        ]);
     }
 }

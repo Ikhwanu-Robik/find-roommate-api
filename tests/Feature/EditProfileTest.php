@@ -34,4 +34,25 @@ class EditProfileTest extends TestCase
         ]);
     }
 
+    public function test_can_edit_profile_full_name(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $data = (new ProfileAttribute)->only(['full_name'])->toArray();
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertOk();
+
+        $oldFullName = $customerProfile->full_name;
+        $newFullName = CustomerProfile::find($customerProfile->id)->full_name;
+        $this->assertNotSame(
+            $oldFullName,
+            $newFullName
+        );
+    }
+
 }
