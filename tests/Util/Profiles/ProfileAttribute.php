@@ -9,16 +9,19 @@ use Illuminate\Support\Collection;
 class ProfileAttribute implements IDataProvider
 {
     private $fullName;
+    private $gender;
     private $birthdate;
     private $publicAttributes;
 
     public function __construct()
     {
         $this->fullName = fake()->name();
+        $this->gender = fake()->randomElement(['male', 'female']);
         $this->birthdate = fake()->date();
 
         $this->publicAttributes = [
             'full_name',
+            'gender',
             'birthdate',
         ];
     }
@@ -34,6 +37,7 @@ class ProfileAttribute implements IDataProvider
     {
         return collect([
             'full_name' => $this->fullName,
+            'gender' => $this->gender,
             'birthdate' => $this->birthdate,
         ]);
     }
@@ -69,6 +73,9 @@ class ProfileAttribute implements IDataProvider
             switch ($key) {
                 case 'full_name':
                     $this->fullName = $value;
+                    break;
+                case 'gender':
+                    $this->gender = $value;
                     break;
                 case 'birthdate':
                     $this->birthdate = $value;

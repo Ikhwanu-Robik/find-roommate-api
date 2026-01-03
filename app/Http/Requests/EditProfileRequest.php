@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\BinaryGender;
 use App\Rules\PastDate;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -16,6 +17,10 @@ class EditProfileRequest extends FormRequest
     {
         return [
             'full_name' => 'sometimes',
+            'gender' => [
+                'sometimes',
+                new BinaryGender,
+            ],
             'birthdate' => [
                 'sometimes',
                 new PastDate,

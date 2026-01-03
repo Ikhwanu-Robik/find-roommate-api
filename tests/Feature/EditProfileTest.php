@@ -80,11 +80,48 @@ class EditProfileTest extends TestCase
         $customerProfile->user()->save($user);
         Sanctum::actingAs($user);
 
-        $data = (new ProfileAttribute)->exclude(['birthdate'])->toArray();
-        $data['birthdate'] = now()->toDateString();
+        $todayDate = now()->toDateString();
+        $data = (new ProfileAttribute)->replace(['birthdate' => $todayDate])->toArray();
 
         $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
 
         $response->assertOnlyJsonValidationErrors(['birthdate']);
     }
+
+    public function test_can_edit_profile_gender(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $replacingGender = $customerProfile->gender == 'male' ? 'female' : 'male';
+        $data = (new ProfileAttribute)->replace(['gender' => $replacingGender])->toArray();
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertOk();
+
+        $oldGender = $customerProfile->gender;
+        $newGender = CustomerProfile::find($customerProfile->id)->gender;
+        $this->assertNotSame(
+            $oldGender,
+            $newGender
+        );
+    }
+
+    public function test_edit_profile_gender_must_be_binary(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $data = (new ProfileAttribute)->replace(['gender' => 'non-binary'])->toArray();
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertOnlyJsonValidationErrors(['gender']);
+    }
+
 }
