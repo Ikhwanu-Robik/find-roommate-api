@@ -2,24 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\EditProfileRequest;
 use App\Models\CustomerProfile;
-use Illuminate\Http\Request;
 
 class CustomerProfileController extends Controller
 {
-    public function update(Request $request, CustomerProfile $customerProfile)
+    public function update(EditProfileRequest $request, CustomerProfile $customerProfile)
     {
-        if ($request->user()->profile->isNot($customerProfile)) {
-            return response()->json([
-                'message' => 'You can only edit your own profile'
-            ], 403);
-        }
-
-        $validated = $request->validate([
-            'full_name' => 'sometimes',
-        ]);
-
-        $customerProfile->update($validated);
+        $attributes = $request->validated();
+        
+        $customerProfile->update($attributes);
 
         return response()->json([
             'customer_profile' => $customerProfile

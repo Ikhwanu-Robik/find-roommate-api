@@ -29,9 +29,6 @@ class EditProfileTest extends TestCase
         $response = $this->putJson('/api/profiles/' . $otherProfile->id, $data);
 
         $response->assertForbidden();
-        $response->assertExactJson([
-            'message' => 'You can only edit your own profile',
-        ]);
     }
 
     public function test_can_edit_profile_full_name(): void
@@ -55,4 +52,39 @@ class EditProfileTest extends TestCase
         );
     }
 
+    public function test_can_edit_profile_birthdate(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $data = (new ProfileAttribute)->only(['birthdate'])->toArray();
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertOk();
+
+        $oldBirthdate = $customerProfile->birthdate;
+        $newBirthdate = CustomerProfile::find($customerProfile->id)->birthdate;
+        $this->assertNotSame(
+            $oldBirthdate,
+            $newBirthdate
+        );
+    }
+
+    public function test_edit_profile_birthdate_must_be_past_date(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $data = (new ProfileAttribute)->exclude(['birthdate'])->toArray();
+        $data['birthdate'] = now()->toDateString();
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertOnlyJsonValidationErrors(['birthdate']);
+    }
 }
