@@ -306,4 +306,24 @@ class EditProfileTest extends TestCase
         $newProfilePhoto = CustomerProfile::find($customerProfile->id)->profile_photo;
         Storage::assertExists($newProfilePhoto);
     }
+
+    public function test_return_500_if_image_storage_fail(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $this->mock(FilesystemFactory::class, function (MockInterface $mock) {
+            $mock->expects('disk')->andReturnSelf();
+            $mock->expects('putFileAs')->andReturnFalse();
+        });
+
+        $data = (new ProfileAttribute)->only(['profile_photo'])->toArray();
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertServerError();
+        $response->assertExactJson(['message' => 'Image storage failed']);
+    }
 }

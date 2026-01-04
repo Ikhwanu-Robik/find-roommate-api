@@ -21,6 +21,12 @@ class CustomerProfileController extends Controller
             $pathToStoredImage = $profilePhoto->store('profile_pics');
         }
 
+        if ($pathToStoredImage === false) {
+            return response()->json([
+                'message' => 'Image storage failed'
+            ], 500);
+        }
+
         if ($pathToStoredImage !== null) {
             $attributes['profile_photo'] = $pathToStoredImage;
         }
