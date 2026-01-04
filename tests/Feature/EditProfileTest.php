@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use App\Models\CustomerProfile;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\Util\Profiles\ProfileAttribute;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -107,7 +108,9 @@ class EditProfileTest extends TestCase
 
         $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
 
-        $response->assertOnlyJsonValidationErrors(['birthdate']);
+        $response->assertOnlyJsonValidationErrors([
+            'birthdate' => 'The birthdate must be past date'
+        ]);
     }
 
     public function test_can_edit_profile_gender(): void
@@ -147,7 +150,9 @@ class EditProfileTest extends TestCase
 
         $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
 
-        $response->assertOnlyJsonValidationErrors(['gender']);
+        $response->assertOnlyJsonValidationErrors([
+            'gender' => 'The gender must be either male or female'
+        ]);
     }
 
     public function test_can_edit_profile_address(): void
@@ -263,5 +268,25 @@ class EditProfileTest extends TestCase
             $oldProfilePhoto,
             $newProfilePhoto
         );
+    }
+
+    public function test_edit_profile_photo_must_be_image(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $jsonFile = UploadedFile::fake()
+            ->create('not-image.json', 10, 'application/json');
+        $data = (new ProfileAttribute)
+            ->replace(['profile_photo' => $jsonFile])
+            ->only(['profile_photo'])->toArray();
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertOnlyJsonValidationErrors([
+            'profile_photo' => 'The profile photo field must be an image.'
+        ]);
     }
 }
