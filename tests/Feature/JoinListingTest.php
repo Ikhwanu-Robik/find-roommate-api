@@ -2,17 +2,24 @@
 
 namespace Tests\Feature;
 
-use App\Models\Lodging;
 use Tests\TestCase;
 use App\Models\User;
+use App\Models\Lodging;
 use Laravel\Sanctum\Sanctum;
 use App\Models\CustomerProfile;
 use App\Models\ProfilesListing;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class JoinListingTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        Storage::fake();
+    }
 
     public function test_join_profile_listing_require_authentication(): void
     {

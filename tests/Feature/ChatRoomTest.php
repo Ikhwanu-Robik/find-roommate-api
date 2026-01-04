@@ -3,12 +3,13 @@
 namespace Tests\Feature;
 
 use Event;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\User;
 use App\Events\NewChat;
 use App\Models\ChatRoom;
 use App\Models\CustomerProfile;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ChatRoomTest extends TestCase
 {
@@ -17,6 +18,7 @@ class ChatRoomTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+        Storage::fake();
         $this->artisan('migrate');
     }
 

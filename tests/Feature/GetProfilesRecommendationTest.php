@@ -12,6 +12,7 @@ use Tests\Util\Match\MatchUtil;
 use Tests\Util\Match\MatchInputs;
 use Database\Seeders\LodgingSeeder;
 use Tests\Util\Match\MatchAssertions;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class GetProfilesRecommendationTest extends TestCase
@@ -23,6 +24,7 @@ class GetProfilesRecommendationTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+        Storage::fake();
         $this->seed(LodgingSeeder::class);
 
         $this->matchInputs = new MatchInputs();
