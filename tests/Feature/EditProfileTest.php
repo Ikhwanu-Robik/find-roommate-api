@@ -6,12 +6,19 @@ use Tests\TestCase;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use App\Models\CustomerProfile;
+use Illuminate\Support\Facades\Storage;
 use Tests\Util\Profiles\ProfileAttribute;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EditProfileTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        Storage::fake();
+    }
 
     public function test_edit_profile_require_authentication(): void
     {
@@ -94,7 +101,9 @@ class EditProfileTest extends TestCase
         Sanctum::actingAs($user);
 
         $todayDate = now()->toDateString();
-        $data = (new ProfileAttribute)->replace(['birthdate' => $todayDate])->toArray();
+        $data = (new ProfileAttribute)
+            ->replace(['birthdate' => $todayDate])
+            ->only(['birthdate'])->toArray();
 
         $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
 
@@ -109,7 +118,9 @@ class EditProfileTest extends TestCase
         Sanctum::actingAs($user);
 
         $replacingGender = $customerProfile->gender == 'male' ? 'female' : 'male';
-        $data = (new ProfileAttribute)->replace(['gender' => $replacingGender])->toArray();
+        $data = (new ProfileAttribute)
+            ->replace(['gender' => $replacingGender])
+            ->only(['gender'])->toArray();
 
         $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
 
@@ -130,7 +141,9 @@ class EditProfileTest extends TestCase
         $customerProfile->user()->save($user);
         Sanctum::actingAs($user);
 
-        $data = (new ProfileAttribute)->replace(['gender' => 'non-binary'])->toArray();
+        $data = (new ProfileAttribute)
+            ->replace(['gender' => 'non-binary'])
+            ->only(['gender'])->toArray();
 
         $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
 
@@ -191,7 +204,9 @@ class EditProfileTest extends TestCase
 
         // making sure that the replacing bio has different tags
         $replacingBio = 'i use windows 11';
-        $data = (new ProfileAttribute)->replace(['bio' => $replacingBio])->toArray();
+        $data = (new ProfileAttribute)
+            ->replace(['bio' => $replacingBio])
+            ->only(['bio'])->toArray();
 
         $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
 
@@ -203,6 +218,50 @@ class EditProfileTest extends TestCase
         $this->assertNotSame(
             json_encode($oldTags),
             json_encode($newTags)
+        );
+    }
+
+    public function test_can_edit_profile_photo(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $data = (new ProfileAttribute)->only(['profile_photo'])->toArray();
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertOk();
+
+        $oldProfilePhoto = $customerProfile->profile_photo;
+        $newProfilePhoto = CustomerProfile::find($customerProfile->id)->profile_photo;
+        $this->assertNotSame(
+            $oldProfilePhoto,
+            $newProfilePhoto
+        );
+    }
+
+    public function test_profile_photo_not_updated_without_image_providedd(): void
+    {
+        // because profile_photo update requires special logic
+        // I thought maybe it needed a dedicated test
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $data = (new ProfileAttribute)->exclude(['profile_photo'])->toArray();
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertOk();
+
+        $oldProfilePhoto = $customerProfile->profile_photo;
+        $newProfilePhoto = CustomerProfile::find($customerProfile->id)->profile_photo;
+        $this->assertSame(
+            $oldProfilePhoto,
+            $newProfilePhoto
         );
     }
 }

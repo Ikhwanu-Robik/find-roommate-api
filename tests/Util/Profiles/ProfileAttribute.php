@@ -2,6 +2,7 @@
 
 namespace Tests\Util\Profiles;
 
+use Illuminate\Http\UploadedFile;
 use InvalidArgumentException;
 use Tests\Util\IDataProvider;
 use Illuminate\Support\Collection;
@@ -13,6 +14,7 @@ class ProfileAttribute implements IDataProvider
     private $birthdate;
     private $address;
     private $bio;
+    private $profilePhoto;
     private $publicAttributes;
 
     public function __construct()
@@ -22,6 +24,7 @@ class ProfileAttribute implements IDataProvider
         $this->birthdate = fake()->date();
         $this->address = fake()->address();
         $this->bio = fake()->realText();
+        $this->profilePhoto = UploadedFile::fake()->image('profile_photo.jpg');
 
         $this->publicAttributes = [
             'full_name',
@@ -29,6 +32,7 @@ class ProfileAttribute implements IDataProvider
             'birthdate',
             'address',
             'bio',
+            'profile_photo',
         ];
     }
 
@@ -47,6 +51,7 @@ class ProfileAttribute implements IDataProvider
             'birthdate' => $this->birthdate,
             'address' => $this->address,
             'bio' => $this->bio,
+            'profile_photo' => $this->profilePhoto,
         ]);
     }
 
@@ -93,6 +98,9 @@ class ProfileAttribute implements IDataProvider
                     break;
                 case 'bio':
                     $this->bio = $value;
+                    break;
+                case 'profile_photo':
+                    $this->profilePhoto = $value;
                     break;
                 default:
                     throw new InvalidArgumentException;

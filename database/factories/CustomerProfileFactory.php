@@ -4,18 +4,22 @@ namespace Database\Factories;
 
 use App\Models\CustomerProfile;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Http\UploadedFile;
 
 class CustomerProfileFactory extends Factory
 {
     public function definition(): array
     {
         $gender = fake()->randomElement(['male', 'female']);
+        $pathToProfilePhoto = UploadedFile::fake()
+            ->image('profile_photo.jpg')->store('profile_pics');
         return [
             'full_name' => fake()->name($gender),
             'gender' => $gender,
             'birthdate' => fake()->date(),
             'address' => fake()->address(),
-            'bio' => fake()->realText()
+            'bio' => fake()->realText(),
+            'profile_photo' => $pathToProfilePhoto
         ];
     }
 

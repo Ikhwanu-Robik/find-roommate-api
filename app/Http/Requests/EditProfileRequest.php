@@ -27,6 +27,7 @@ class EditProfileRequest extends FormRequest
             ],
             'address' => 'sometimes',
             'bio' => 'sometimes',
+            'profile_photo' => 'sometimes',
         ];
     }
 }

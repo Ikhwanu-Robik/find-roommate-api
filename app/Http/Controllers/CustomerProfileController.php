@@ -13,7 +13,17 @@ class CustomerProfileController extends Controller
         CustomerProfile $customerProfile,
         TextTagsGenerator $tagsGenerator
     ) {
-        $attributes = $request->validated();
+        $attributes = $request->except('profile_photo');
+
+        $profilePhoto = $request->file('profile_photo');
+        $pathToStoredImage = null;
+        if ($profilePhoto !== null) {
+            $pathToStoredImage = $profilePhoto->store('profile_pics');
+        }
+
+        if ($pathToStoredImage !== null) {
+            $attributes['profile_photo'] = $pathToStoredImage;
+        }
 
         $customerProfile->update($attributes);
 
