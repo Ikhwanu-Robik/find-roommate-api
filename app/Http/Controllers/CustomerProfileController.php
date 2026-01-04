@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\CustomerProfile;
-use App\Services\TextTagsGenerator;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\UploadedFile;
+use App\Services\TextTagsGenerator;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\EditProfileRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class CustomerProfileController extends Controller
 {
@@ -20,11 +20,11 @@ class CustomerProfileController extends Controller
 
         $profilePhoto = $request->file('profile_photo');
         if ($profilePhoto) {
-            $pathToStoredImage = $this->storeImageOrThrow(
-                $customerProfile,
-                $profilePhoto
-            );
+            $pathToStoredImage = $this->storeImageOrThrow($profilePhoto);
             $attributes['profile_photo'] = $pathToStoredImage;
+
+            $oldImagePath = $customerProfile->profile_photo;
+            Storage::delete($oldImagePath);
         }
 
         $customerProfile->update($attributes);
@@ -37,10 +37,7 @@ class CustomerProfileController extends Controller
         ]);
     }
 
-    private function storeImageOrThrow(
-        CustomerProfile $customerProfile,
-        UploadedFile $profilePhoto
-    ) {
+    private function storeImageOrThrow(UploadedFile $profilePhoto) {
         $pathToStoredImage = $profilePhoto->store('profile_pics');
 
         // I didn't configure filesystem to throw,
@@ -52,9 +49,6 @@ class CustomerProfileController extends Controller
                 'message' => 'Image storage failed'
             ], 500));
         }
-
-        $oldImagePath = $customerProfile->profile_photo;
-        Storage::delete($oldImagePath);
 
         return $pathToStoredImage;
     }
