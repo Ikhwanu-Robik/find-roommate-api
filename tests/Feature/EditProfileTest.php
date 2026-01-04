@@ -289,4 +289,21 @@ class EditProfileTest extends TestCase
             'profile_photo' => 'The profile photo field must be an image.'
         ]);
     }
+
+    public function test_edited_profile_photo_is_stored(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $data = (new ProfileAttribute)->only(['profile_photo'])->toArray();
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertOk();
+
+        $newProfilePhoto = CustomerProfile::find($customerProfile->id)->profile_photo;
+        Storage::assertExists($newProfilePhoto);
+    }
 }
