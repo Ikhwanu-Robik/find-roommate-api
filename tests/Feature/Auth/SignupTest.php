@@ -182,7 +182,7 @@ class SignupTest extends TestCase
 
         $response = $this->postJson('/api/signup', $data);
 
-        $savedFilePath = $response->json('user.profile_photo');
+        $savedFilePath = $response->json('user.profile.profile_photo');
         Storage::assertExists($savedFilePath);
     }
 
