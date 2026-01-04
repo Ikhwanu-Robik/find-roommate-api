@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\EditProfileRequest;
 use App\Models\CustomerProfile;
 use App\Services\TextTagsGenerator;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\EditProfileRequest;
 
 class CustomerProfileController extends Controller
 {
@@ -29,6 +30,9 @@ class CustomerProfileController extends Controller
 
         if ($pathToStoredImage !== null) {
             $attributes['profile_photo'] = $pathToStoredImage;
+
+            $oldImagePath = $customerProfile->profile_photo;
+            Storage::delete($oldImagePath);
         }
 
         $customerProfile->update($attributes);

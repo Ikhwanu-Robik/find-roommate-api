@@ -4,12 +4,14 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\User;
+use Mockery\MockInterface;
 use Laravel\Sanctum\Sanctum;
 use App\Models\CustomerProfile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\Util\Profiles\ProfileAttribute;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
 
 class EditProfileTest extends TestCase
 {
@@ -325,5 +327,22 @@ class EditProfileTest extends TestCase
 
         $response->assertServerError();
         $response->assertExactJson(['message' => 'Image storage failed']);
+    }
+
+    public function test_editing_profile_photo_will_delete_old_profile_photo_from_storage(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $data = (new ProfileAttribute)->only(['profile_photo'])->toArray();
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertOk();
+
+        $oldProfilePhoto = $customerProfile->profile_photo;
+        Storage::assertMissing($oldProfilePhoto);
     }
 }
