@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use Database\Factories\ChatFactory;
 use Event;
 use Tests\TestCase;
+use App\Models\Chat;
 use App\Models\User;
 use App\Events\NewChat;
 use App\Models\ChatRoom;
@@ -103,5 +105,33 @@ class ChatRoomTest extends TestCase
             'chat_room_id' => $chatRoom->id,
             'message' => 'Hello World'
         ]);
+    }
+
+    public function test_persisted_chats_can_be_retrieved(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+
+        $chatRoom = ChatRoom::factory()->create();
+        $chatRoom->customerProfiles()->saveMany([
+            $customerProfile,
+            CustomerProfile::factory()->create()
+        ]);
+
+        $chats = Chat::factory()->count(3)->for($chatRoom)->create();
+
+        $response = $this->getJson('/api/chat-rooms/' . $chatRoom->id . '/chats');
+        $response->assertOk();
+        $response->assertJsonCount(3, 'chats');
+
+        foreach ($chats as $chat) {
+            $response->assertJsonFragment([
+                'id' => $chat->id,
+                'chat_room_id' => $chat->chat_room_id,
+                'message' => $chat->message
+            ]);
+        }
     }
 }

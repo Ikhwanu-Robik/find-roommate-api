@@ -118,4 +118,19 @@ class MatchController extends Controller
         
         NewChat::dispatch($chatRoom, $sender, $message);
     }
+
+    public function getChats(Request $request, ChatRoom $chatRoom)
+    {
+        $requester = $request->user()->profile;
+        if (! $chatRoom->isInviting($requester)) {
+           return response()->json(
+              ['message' => 'You are not invited to this chat room'],
+              403
+           );
+        }
+
+        return response()->json([
+            'chats' => $chatRoom->chats
+        ]);
+    }
 }
