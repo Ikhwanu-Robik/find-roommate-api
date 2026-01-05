@@ -23,4 +23,9 @@ class ChatRoom extends Model
     {
         return $this->customerProfiles->contains($customerProfile);
     }
+
+    public function chats()
+    {
+        return $this->hasMany(Chat::class);
+    }
 }

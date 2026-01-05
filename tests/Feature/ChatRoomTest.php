@@ -80,4 +80,28 @@ class ChatRoomTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    public function test_chat_persists_in_database(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+
+        $chatRoom = ChatRoom::factory()->create();
+        $chatRoom->customerProfiles()->saveMany([
+            $customerProfile,
+            CustomerProfile::factory()->create()
+        ]);
+
+        $response = $this->postJson('/api/chat-rooms/' . $chatRoom->id . '/chats', [
+            'message' => 'Hello World'
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('chats', [
+            'chat_room_id' => $chatRoom->id,
+            'message' => 'Hello World'
+        ]);
+    }
 }
