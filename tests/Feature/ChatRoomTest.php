@@ -134,4 +134,24 @@ class ChatRoomTest extends TestCase
             ]);
         }
     }
+
+    public function test_user_must_be_invited_to_the_chat_room_to_retrieve_its_persisted_chats(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+
+        $chatRoom = ChatRoom::factory()->create();
+        $chatRoom->customerProfiles()->saveMany([
+            CustomerProfile::factory()->create(),
+            CustomerProfile::factory()->create()
+        ]);
+
+        Chat::factory()->count(3)->for($chatRoom)->create();
+
+        $response = $this->getJson('/api/chat-rooms/' . $chatRoom->id . '/chats');
+
+        $response->assertForbidden();
+    }
 }
