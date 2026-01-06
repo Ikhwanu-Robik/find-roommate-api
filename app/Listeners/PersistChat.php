@@ -13,6 +13,10 @@ class PersistChat
 
     public function handle(NewChat $event): void
     {
-        $event->chatRoom->chats()->create(['message' => $event->message]);
+        $chat = $event->chatRoom->chats()->create([
+            'message' => $event->message
+        ]);
+
+        $event->sender->chat()->save($chat);
     }
 }

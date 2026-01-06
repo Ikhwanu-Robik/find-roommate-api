@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use Database\Factories\ChatFactory;
 use Event;
 use Tests\TestCase;
 use App\Models\Chat;
@@ -120,7 +119,9 @@ class ChatRoomTest extends TestCase
             CustomerProfile::factory()->create()
         ]);
 
-        $chats = Chat::factory()->count(3)->for($chatRoom)->create();
+        $chats = Chat::factory()->count(3)
+            ->for($chatRoom)->create();
+        $customerProfile->chat()->saveMany($chats);
 
         $response = $this->getJson('/api/chat-rooms/' . $chatRoom->id . '/chats');
         $response->assertOk();
@@ -148,10 +149,39 @@ class ChatRoomTest extends TestCase
             CustomerProfile::factory()->create()
         ]);
 
-        Chat::factory()->count(3)->for($chatRoom)->create();
+        $chats = Chat::factory()->count(3)
+            ->for($chatRoom)->create();
+        $customerProfile->chat()->saveMany($chats);
 
         $response = $this->getJson('/api/chat-rooms/' . $chatRoom->id . '/chats');
 
         $response->assertForbidden();
+    }
+
+    public function test_persisted_chat_has_a_sender(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+
+        $chatRoom = ChatRoom::factory()->create();
+        $chatRoom->customerProfiles()->saveMany([
+            $customerProfile,
+            CustomerProfile::factory()->create()
+        ]);
+
+        $chat = Chat::factory()->for($chatRoom)->create();
+        $customerProfile->chat()->save($chat);
+
+        $response = $this->getJson('/api/chat-rooms/' . $chatRoom->id . '/chats');
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'chats');
+
+        $response->assertJsonPathCanonicalizing(
+            'chats.0.sender',
+            $customerProfile->toArray()
+        );
     }
 }

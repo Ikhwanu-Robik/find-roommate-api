@@ -130,7 +130,7 @@ class MatchController extends Controller
         }
 
         return response()->json([
-            'chats' => $chatRoom->chats
+            'chats' => $chatRoom->chats->load('sender')
         ]);
     }
 }
