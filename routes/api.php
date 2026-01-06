@@ -28,6 +28,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/chat-rooms/{chatRoom}/chats', [MatchController::class, 'sendChat'])
         ->name('chat-room.send-message');
 
+    Route::get('/chat-rooms/{chatRoom}/chats', [MatchController::class, 'getChats'])
+        ->name('chat-room.get-messages');
+
     Route::put('/profiles/{customerProfile}', [CustomerProfileController::class, 'update'])
         ->name('customer-profiles.update');
 });

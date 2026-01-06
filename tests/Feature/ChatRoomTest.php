@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Event;
 use Tests\TestCase;
+use App\Models\Chat;
 use App\Models\User;
 use App\Events\NewChat;
 use App\Models\ChatRoom;
@@ -79,5 +80,108 @@ class ChatRoomTest extends TestCase
         ]);
 
         $response->assertForbidden();
+    }
+
+    public function test_chat_persists_in_database(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+
+        $chatRoom = ChatRoom::factory()->create();
+        $chatRoom->customerProfiles()->saveMany([
+            $customerProfile,
+            CustomerProfile::factory()->create()
+        ]);
+
+        $response = $this->postJson('/api/chat-rooms/' . $chatRoom->id . '/chats', [
+            'message' => 'Hello World'
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('chats', [
+            'chat_room_id' => $chatRoom->id,
+            'message' => 'Hello World'
+        ]);
+    }
+
+    public function test_persisted_chats_can_be_retrieved(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+
+        $chatRoom = ChatRoom::factory()->create();
+        $chatRoom->customerProfiles()->saveMany([
+            $customerProfile,
+            CustomerProfile::factory()->create()
+        ]);
+
+        $chats = Chat::factory()->count(3)
+            ->for($chatRoom)->create();
+        $customerProfile->chat()->saveMany($chats);
+
+        $response = $this->getJson('/api/chat-rooms/' . $chatRoom->id . '/chats');
+        $response->assertOk();
+        $response->assertJsonCount(3, 'chats');
+
+        foreach ($chats as $chat) {
+            $response->assertJsonFragment([
+                'id' => $chat->id,
+                'chat_room_id' => $chat->chat_room_id,
+                'message' => $chat->message
+            ]);
+        }
+    }
+
+    public function test_user_must_be_invited_to_the_chat_room_to_retrieve_its_persisted_chats(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+
+        $chatRoom = ChatRoom::factory()->create();
+        $chatRoom->customerProfiles()->saveMany([
+            CustomerProfile::factory()->create(),
+            CustomerProfile::factory()->create()
+        ]);
+
+        $chats = Chat::factory()->count(3)
+            ->for($chatRoom)->create();
+        $customerProfile->chat()->saveMany($chats);
+
+        $response = $this->getJson('/api/chat-rooms/' . $chatRoom->id . '/chats');
+
+        $response->assertForbidden();
+    }
+
+    public function test_persisted_chat_has_a_sender(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+
+        $chatRoom = ChatRoom::factory()->create();
+        $chatRoom->customerProfiles()->saveMany([
+            $customerProfile,
+            CustomerProfile::factory()->create()
+        ]);
+
+        $chat = Chat::factory()->for($chatRoom)->create();
+        $customerProfile->chat()->save($chat);
+
+        $response = $this->getJson('/api/chat-rooms/' . $chatRoom->id . '/chats');
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'chats');
+
+        $response->assertJsonPathCanonicalizing(
+            'chats.0.sender',
+            $customerProfile->toArray()
+        );
     }
 }

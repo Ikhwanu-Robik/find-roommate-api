@@ -15,7 +15,7 @@ class NewChat implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        private ChatRoom $chatRoom,
+        public ChatRoom $chatRoom,
         public CustomerProfile $sender,
         public string $message
     ) {
