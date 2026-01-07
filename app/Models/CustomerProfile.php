@@ -33,6 +33,11 @@ class CustomerProfile extends Model
         return $this->morphOne(Chat::class, 'sender');
     }
 
+    public function chatRooms()
+    {
+        return $this->belongsToMany(ChatRoom::class);
+    }
+
     #[Scope]
     public function whereBioLike(Builder $builder, string $bio)
     {

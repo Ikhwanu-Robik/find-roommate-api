@@ -184,4 +184,43 @@ class ChatRoomTest extends TestCase
             $customerProfile->toArray()
         );
     }
+
+    public function test_user_can_get_joined_chat_rooms(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+
+        $chatRooms = ChatRoom::factory(3)->create();
+        foreach ($chatRooms as $chatRoom) {
+            $chatRoom->customerProfiles()->save($customerProfile);
+        }
+
+        $response = $this->getJson('/api/chat-rooms');
+
+        $response->assertOk();
+        $response->assertJsonCount(3, 'chat_rooms');
+
+        $response->assertJsonPathCanonicalizing(
+            'chat_rooms',
+            $chatRooms->toArray()
+        );
+    }
+
+    public function test_getting_joined_chat_rooms_require_authetication(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+
+        $chatRooms = ChatRoom::factory(3)->create();
+        foreach ($chatRooms as $chatRoom) {
+            $chatRoom->customerProfiles()->save($customerProfile);
+        }
+
+        $response = $this->getJson('/api/chat-rooms');
+
+        $response->assertUnauthorized();
+    }
 }

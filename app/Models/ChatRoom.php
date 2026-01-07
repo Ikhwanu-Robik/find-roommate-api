@@ -10,8 +10,8 @@ class ChatRoom extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'customer_profile_id'
+    protected $hidden = [
+        'pivot'
     ];
 
     public function customerProfiles()

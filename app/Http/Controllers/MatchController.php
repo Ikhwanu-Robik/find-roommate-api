@@ -119,6 +119,12 @@ class MatchController extends Controller
         NewChat::dispatch($chatRoom, $sender, $message);
     }
 
+    public function getChatRooms(Request $request)
+    {
+        $chatRooms = $request->user()->profile->chatRooms;
+        return response()->json(['chat_rooms' => $chatRooms]);
+    }
+
     public function getChats(Request $request, ChatRoom $chatRoom)
     {
         $requester = $request->user()->profile;
