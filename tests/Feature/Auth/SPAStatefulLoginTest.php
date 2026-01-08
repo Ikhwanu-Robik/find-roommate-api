@@ -30,4 +30,34 @@ class SPAStatefulLoginTest extends TestCase
 
         $response->assertUnauthorized();
     }
+
+    public function test_SPA_stateful_login_require_phone(): void
+    {
+        $data = (new LoginCredentials)->exclude(['phone'])->toArray();
+
+        $response = $this->postJson('/api/login', $data);
+
+        $response->assertJsonValidationErrors('phone');        
+    }
+
+    public function test_SPA_stateful_login_require_valid_format_phone(): void
+    {
+        $invalidFormatPhone = fake()->regexify('/^\+62-08[1-9]{1}\d{1}-{1}\d{4}-\d{2,5}$/');
+        $data = (new LoginCredentials)->replace(['phone' => $invalidFormatPhone])->toArray();
+
+        $response = $this->postJson('/api/login', $data);
+
+        $response->assertJsonValidationErrors([
+            'phone' => 'The phone is not an Indonesian phone number of the required format'
+        ]);
+    }
+
+    public function test_SPA_stateful_login_require_password(): void
+    {
+        $data = (new LoginCredentials)->exclude(['password'])->toArray();
+
+        $response = $this->postJson('/api/login', $data);
+
+        $response->assertJsonValidationErrorFor('password');
+    }
 }
