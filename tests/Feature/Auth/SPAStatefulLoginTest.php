@@ -19,4 +19,15 @@ class SPAStatefulLoginTest extends TestCase
 
         $this->getJson('/api/me')->assertOk();
     }
+
+    public function test_SPA_cannot_login_statefully_with_incorrect_credentials(): void
+    {
+        $data = new LoginCredentials();
+        $otherData = new LoginCredentials();
+        $data = $data->replace(['phone' => $otherData->getPhone()])->toArray();
+
+        $response = $this->postJson('/login', $data);
+
+        $response->assertUnauthorized();
+    }
 }
