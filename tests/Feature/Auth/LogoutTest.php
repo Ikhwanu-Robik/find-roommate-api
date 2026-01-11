@@ -10,17 +10,26 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class LogoutTest extends TestCase
 {
     use RefreshDatabase;
-    
+
     public function test_user_can_logout(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $data = [];
 
-        $logoutResponse = $this->postJson('/api/logout', $data);
+        $logoutResponse = $this->postJson('/api/logout');
 
         $logoutResponse->assertOk();
     }
-    
+
+    public function test_stateful_user_can_logout(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $logoutResponse = $this->postJson('/logout');
+
+        $logoutResponse->assertOk();
+        $this->getJson('/api/me')->assertUnauthorized();
+    }
+
     public function test_logout_require_authentication(): void
     {
         $response = $this->postJson('/api/logout');
