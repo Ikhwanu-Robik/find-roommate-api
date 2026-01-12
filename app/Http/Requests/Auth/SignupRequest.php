@@ -20,7 +20,8 @@ class SignupRequest extends FormRequest
             'name' => 'required',
             'phone' => [
                 'required',
-                new IndonesianPhoneNumber
+                new IndonesianPhoneNumber,
+                'unique:users,phone'
             ],
             'password' => 'required',
             'birthdate' => [

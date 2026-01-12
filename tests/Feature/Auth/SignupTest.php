@@ -3,6 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use Tests\TestCase;
+use App\Models\User;
 use Mockery\MockInterface;
 use Illuminate\Http\UploadedFile;
 use Tests\Util\Auth\SignupAssertions;
@@ -55,6 +56,20 @@ class SignupTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('phone');
+    }
+
+    public function test_signup_require_phone_to_be_unique(): void
+    {
+        $user = User::factory()->create();
+        $data = (new SignupAttributes)
+            ->replace(['phone' => $user->phone])->toArray();
+
+        $response = $this->postJson('/api/signup', $data);
+
+        $response->assertStatus(422);
+        $response->assertOnlyJsonValidationErrors([
+            'phone' => 'The phone has already been taken'
+        ]);
     }
 
     public function test_signup_require_valid_format_phone(): void
