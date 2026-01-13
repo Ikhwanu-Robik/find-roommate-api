@@ -14,7 +14,7 @@ Route::post('/login', LoginController::class)->name('login');
 Route::get('/lodgings', [LodgingController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/me', fn () => "You are logged in");
+    Route::get('/me', [CustomerProfileController::class, 'getSelf'])->name('get.self');
     Route::post('/logout', LogoutController::class)->name('logout');
 
     Route::get('/match/profiles-recommendation', [MatchController::class, 'getProfilesRecommendation'])

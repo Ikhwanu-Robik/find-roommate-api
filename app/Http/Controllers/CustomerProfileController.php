@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Models\CustomerProfile;
 use Illuminate\Http\UploadedFile;
 use App\Services\TextTagsGenerator;
@@ -37,7 +38,8 @@ class CustomerProfileController extends Controller
         ]);
     }
 
-    private function storeImageOrThrow(UploadedFile $profilePhoto) {
+    private function storeImageOrThrow(UploadedFile $profilePhoto)
+    {
         $pathToStoredImage = $profilePhoto->store('profile_pics');
 
         // I didn't configure filesystem to throw,
@@ -51,5 +53,12 @@ class CustomerProfileController extends Controller
         }
 
         return $pathToStoredImage;
+    }
+
+    public function getSelf(Request $request)
+    {
+        return response()->json([
+            'user' => $request->user()->load('profile'),
+        ]);
     }
 }
