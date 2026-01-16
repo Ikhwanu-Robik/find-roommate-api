@@ -121,7 +121,7 @@ class MatchController extends Controller
 
     public function getChatRooms(Request $request)
     {
-        $chatRooms = $request->user()->profile->chatRooms;
+        $chatRooms = $request->user()->profile->chatRooms->load('customerProfiles');
         return response()->json(['chat_rooms' => $chatRooms]);
     }
 
