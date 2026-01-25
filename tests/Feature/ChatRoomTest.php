@@ -204,7 +204,7 @@ class ChatRoomTest extends TestCase
 
         $response->assertJsonPathCanonicalizing(
             'chat_rooms',
-            $chatRooms->toArray()
+            $chatRooms->load('customerProfiles')->toArray()
         );
     }
 
