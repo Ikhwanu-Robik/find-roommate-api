@@ -345,4 +345,29 @@ class EditProfileTest extends TestCase
         $oldProfilePhoto = $customerProfile->profile_photo;
         Storage::assertMissing($oldProfilePhoto);
     }
+
+    public function test_old_image_is_not_deleted_if_bio_processing_failed(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $data = (new ProfileAttribute)->toArray();
+
+        $this->mock('App\Services\TextTagsGenerator', function (MockInterface $mockInterface) {
+            $mockInterface->shouldReceive('generate')->andThrow(
+                'Exception',
+                'The connection to api.text-tags-generator took to long to respond',
+                500
+            );
+        });
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertServerError();
+
+        $oldProfilePhoto = $customerProfile->profile_photo;
+        Storage::assertExists($oldProfilePhoto);
+    }
 }

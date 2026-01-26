@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Http\Request;
 use App\Models\CustomerProfile;
 use Illuminate\Http\UploadedFile;
@@ -17,25 +18,54 @@ class CustomerProfileController extends Controller
         CustomerProfile $customerProfile,
         TextTagsGenerator $tagsGenerator
     ) {
-        $attributes = $request->except('profile_photo');
-
+        $attributes = $request->except(['profile_photo', '_method']);
         $profilePhoto = $request->file('profile_photo');
-        if ($profilePhoto) {
-            $pathToStoredImage = $this->storeImageOrThrow($profilePhoto);
-            $attributes['profile_photo'] = $pathToStoredImage;
+        $oldImagePath = null;
+        $newImagePath = null;
 
+        if ($profilePhoto) {
+            $newImagePath = $this->storeImageOrThrow($profilePhoto);
             $oldImagePath = $customerProfile->profile_photo;
-            Storage::delete($oldImagePath);
+
+            $attributes['profile_photo'] = $newImagePath;
         }
 
-        $customerProfile->update($attributes);
+        $this->updateWithoutSaving($customerProfile, $attributes);
 
-        $tags = $tagsGenerator->generate($customerProfile->bio);
-        $customerProfile->syncTags($tags);
+        try {
+            if ($customerProfile->isDirty('bio')) {
+                $newTags = $tagsGenerator->generate($customerProfile->bio);
+                $customerProfile->syncTags($newTags);
+            }
 
-        return response()->json([
-            'customer_profile' => $customerProfile
-        ]);
+            $customerProfile->save();
+            
+            // for some reason, isDirty('profile_photo') doesn't work
+            if ($newImagePath) {
+                Storage::delete($oldImagePath);
+            }
+
+            return response()->json([
+                'customer_profile' => $customerProfile
+            ]);
+        } catch (Exception $e) {
+            Storage::delete($newImagePath);
+
+            $customerProfile->refresh();
+            $oldTags = $tagsGenerator->generate($customerProfile->bio);
+            $customerProfile->syncTags($oldTags);
+
+            throw $e;
+        }
+    }
+
+    private function updateWithoutSaving(
+        CustomerProfile $customerProfile,
+        array $attributes
+    ) {
+        foreach ($attributes as $key => $value) {
+            $customerProfile[$key] = $value;
+        }
     }
 
     private function storeImageOrThrow(UploadedFile $profilePhoto)
