@@ -8,6 +8,7 @@ use App\Models\Chat;
 use App\Models\User;
 use App\Events\NewChat;
 use App\Models\ChatRoom;
+use Laravel\Sanctum\Sanctum;
 use App\Models\CustomerProfile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -222,5 +223,49 @@ class ChatRoomTest extends TestCase
         $response = $this->getJson('/api/chat-rooms');
 
         $response->assertUnauthorized();
+    }
+
+    public function test_get_chat_room_by_id(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $chatRoom = ChatRoom::factory()->create();
+        $chatRoom->customerProfiles()->save($customerProfile);
+
+        $response = $this->getJson('/api/chat-rooms/' . $chatRoom->id);
+
+        $response->assertOk();
+        $response->assertJson(['chat_room' => $chatRoom->toArray()]);
+    }
+
+    public function test_get_chat_room_by_id_require_authentication(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+
+        $chatRoom = ChatRoom::factory()->create();
+        $chatRoom->customerProfiles()->save($customerProfile);
+
+        $response = $this->getJson('/api/chat-rooms/' . $chatRoom->id);
+
+        $response->assertUnauthorized();
+    }
+
+    public function test_user_must_be_invited_to_get_chat_room_by_id(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $chatRoom = ChatRoom::factory()->create();
+
+        $response = $this->getJson('/api/chat-rooms/' . $chatRoom->id);
+
+        $response->assertForbidden();
     }
 }
