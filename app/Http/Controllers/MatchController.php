@@ -7,6 +7,7 @@ use App\Models\ChatRoom;
 use Illuminate\Http\Request;
 use App\Models\CustomerProfile;
 use App\Models\ProfilesListing;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\JoinListingRequest;
 use App\Http\Requests\GetProfilesRecommendationRequest as GetProfilesRecRequest;
 
@@ -35,6 +36,7 @@ class MatchController extends Controller
     private function getMatchingProfiles(array $criteria)
     {
         $matchingProfiles = ProfilesListing::whereGender($criteria['gender'])
+            ->whereNotAlreadyChattedBy(Auth::user()->profile)
             ->whereBirthdateBetween([
                 'min_birthdate' => $criteria['min_birthdate'],
                 'max_birthdate' => $criteria['max_birthdate'],

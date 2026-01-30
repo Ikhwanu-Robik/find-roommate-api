@@ -26,6 +26,18 @@ class ProfilesListing extends Model
     }
 
     #[Scope]
+    protected function whereNotAlreadyChattedBy(Builder $query, CustomerProfile $profile)
+    {
+        $requestorChatRooms = $profile->chatRooms;
+
+        $query->whereHas('customerProfile', function (Builder $queryInner) use ($requestorChatRooms) {
+            $queryInner->whereHas('chatRooms', function (Builder $chatRoomBuilder) use ($requestorChatRooms) {
+                $chatRoomBuilder->whereIn('chat_rooms.id', $requestorChatRooms->pluck('id'));
+            }, '=', 0);
+        });
+    }
+
+    #[Scope]
     protected function whereBirthdateBetween(
         Builder $query,
         array $dateRange = [

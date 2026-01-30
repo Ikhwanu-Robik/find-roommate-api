@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ChatRoom;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Lodging;
@@ -269,5 +270,38 @@ class GetProfilesRecommendationTest extends TestCase
 
         $response->assertOk();
         $response->assertJsonCount(1, 'matching_profiles');
+    }
+
+    public function test_chatted_profile_is_excluded_from_profiles_recommendation(): void
+    {
+        // create the user making the request
+        $customerProfile = CustomerProfile::factory()->create();
+        $user = User::factory()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+        // mock joining listing
+        ProfilesListing::create([
+            'customer_profile_id' => $customerProfile->id,
+            'lodging_id' => Lodging::all()->random()->id
+        ]);
+
+        // create the profiles that should be returned by the API
+        $criteria = ['min_age' => 17, 'max_age' => 27, 'gender' => 'male', 'lodging_id' => 1, 'bio' => 'i use arch btw'];
+        $expectedAttributes = MatchUtil::createAttributesFromCriteria($criteria);
+        $expectedProfile = CustomerProfile::factory()->tagged()->create($expectedAttributes);
+
+        ProfilesListing::create([
+            'customer_profile_id' => $expectedProfile->id,
+            'lodging_id' => $criteria['lodging_id']
+        ]);
+
+        // mock chatting the expected profile
+        $chatRoom = ChatRoom::factory()->create();
+        $chatRoom->customerProfiles()->saveMany([$customerProfile, $expectedProfile]);
+
+        $response = $this->getJson('/api/match/profiles-recommendation' . '?' . http_build_query($criteria));
+
+        $response->assertOk();
+        $response->assertJsonCount(0, 'matching_profiles');
     }
 }
