@@ -370,4 +370,31 @@ class EditProfileTest extends TestCase
         $oldProfilePhoto = $customerProfile->profile_photo;
         Storage::assertExists($oldProfilePhoto);
     }
+
+    public function test_old_bio_tags_is_preserved_if_edit_profile_failed(): void
+    {
+        $user = User::factory()->create();
+        $customerProfile = CustomerProfile::factory()->tagged()->create();
+        $customerProfile->user()->save($user);
+        Sanctum::actingAs($user);
+
+        $oldTags = $customerProfile->tags;
+
+        $data = (new ProfileAttribute)->toArray();
+
+        Storage::partialMock()->shouldReceive('delete')->andThrow(
+            'Exception',
+            'Attempt to save models interuppted intentionally',
+            500
+        );
+
+        $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
+
+        $response->assertServerError();
+
+        $customerProfile->refresh();
+        $newTags = $customerProfile->tags;
+        $this->assertSame($oldTags->count(), $newTags->count());
+        $this->assertSame($oldTags->toArray(), $newTags->toArray());
+    }
 }
