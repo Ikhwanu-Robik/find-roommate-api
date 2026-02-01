@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Services\TextTagsGenerator;
 use Tests\TestCase;
 use App\Models\User;
 use Mockery\MockInterface;
@@ -215,5 +216,49 @@ class SignupTest extends TestCase
         $response->assertJson([
             'message' => 'Signup successful, but image storage failed. You can try again in the profile menu'
         ]);
+    }
+
+    public function test_user_not_created_if_profile_tagging_failed(): void
+    {
+        $data = (new SignupAttributes)->toArray();
+
+        $this->mock(
+            TextTagsGenerator::class,
+            function (MockInterface $mock) {
+                $mock->shouldReceive('generate')
+                    ->andThrow(
+                        'Exception',
+                        'The connection to api.text-tags-generator took to long to respond',
+                        500
+                    );
+            }
+        );
+
+        $response = $this->postJson('/api/signup', $data);
+
+        $response->assertServerError();
+        $this->assertDatabaseCount('users', 0);
+    }
+ 
+    public function test_profile_not_created_if_profile_tagging_failed(): void
+    {
+        $data = (new SignupAttributes)->toArray();
+
+        $this->mock(
+            TextTagsGenerator::class,
+            function (MockInterface $mock) {
+                $mock->shouldReceive('generate')
+                    ->andThrow(
+                        'Exception',
+                        'The connection to api.text-tags-generator took to long to respond',
+                        500
+                    );
+            }
+        );
+
+        $response = $this->postJson('/api/signup', $data);
+
+        $response->assertServerError();
+        $this->assertDatabaseCount('customer_profiles', 0);
     }
 }

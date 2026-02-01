@@ -15,17 +15,19 @@ class SignupController extends Controller
         $pathToStoredImage = $request->file('profile_photo')->store('profile_pics');
 
         $userAttributes = $request->safe(['name', 'phone', 'password']);
-        $user = User::create($userAttributes);
+        $user = User::make($userAttributes);
 
-        $customerProfileAttributes = $request->safe(['birthdate', 'gender', 'address', 'bio']);
-        $customerProfile = $this->createCustomerProfile(
-            $user,
-            $customerProfileAttributes,
-            $pathToStoredImage
-        );
+        $profileAttributes = $request->safe(['birthdate', 'gender', 'address', 'bio']);
+        $profileAttributes['full_name'] = $user->name;
+        $profileAttributes['profile_photo'] = $pathToStoredImage ?: null;
+        $customerProfile = CustomerProfile::make($profileAttributes);
 
         $tags = $tagsGenerator->generate($customerProfile->bio);
+        
+        $customerProfile->save();
         $customerProfile->attachTags($tags);
+        $user->save();
+        $customerProfile->user()->save($user);
 
         $response = ['user' => $user->load('profile')];
         if (!$pathToStoredImage) {
@@ -33,16 +35,5 @@ class SignupController extends Controller
         }
 
         return response()->json($response);
-    }
-
-    private function createCustomerProfile($user, $attributes, $profilePhotoPath)
-    {
-        $attributes['full_name'] = $user->name;
-        $attributes['profile_photo'] = $profilePhotoPath ? $profilePhotoPath : null;
-        $customerProfile = CustomerProfile::create($attributes);
-
-        $customerProfile->user()->save($user);
-        
-        return $customerProfile;
     }
 }
