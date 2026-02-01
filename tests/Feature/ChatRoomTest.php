@@ -202,11 +202,6 @@ class ChatRoomTest extends TestCase
 
         $response->assertOk();
         $response->assertJsonCount(3, 'chat_rooms');
-
-        $response->assertJsonPathCanonicalizing(
-            'chat_rooms',
-            $chatRooms->load('customerProfiles')->toArray()
-        );
     }
 
     public function test_getting_joined_chat_rooms_require_authetication(): void
@@ -267,5 +262,69 @@ class ChatRoomTest extends TestCase
         $response = $this->getJson('/api/chat-rooms/' . $chatRoom->id);
 
         $response->assertForbidden();
+    }
+
+    public function test_chat_room_exclude_current_user_profile_in_get_chat_room(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+
+        $otherProfile = CustomerProfile::factory()->create();
+
+        $chatRoom = ChatRoom::factory()->create();
+        $chatRoom->customerProfiles()->save($customerProfile);
+        $chatRoom->customerProfiles()->save($otherProfile);
+
+        $response = $this->getJson('/api/chat-rooms');
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'chat_rooms');
+
+        $returnedChatRoom = $response->json('chat_rooms')[0];
+        $this->assertEquals(
+            1,
+            count($returnedChatRoom['customer_profiles'])
+        );
+
+        $returnedCRProfileNoPivot = $returnedChatRoom['customer_profiles'][0];
+        unset($returnedCRProfileNoPivot['pivot']);
+        $this->assertEquals(
+            $otherProfile->toArray(),
+            $returnedCRProfileNoPivot
+        );
+    }
+
+    public function test_chat_room_exclude_current_user_profile_in_get_chat_room_by_id(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $customerProfile = CustomerProfile::factory()->create();
+        $customerProfile->user()->save($user);
+
+        $otherProfile = CustomerProfile::factory()->create();
+
+        $chatRoom = ChatRoom::factory()->create();
+        $chatRoom->customerProfiles()->save($customerProfile);
+        $chatRoom->customerProfiles()->save($otherProfile);
+
+        $response = $this->getJson('/api/chat-rooms/' . $chatRoom->id);
+
+        $response->assertOk();
+        $response->assertJson(['chat_room' => $chatRoom->toArray()]);
+        
+        $returnedChatRoom = $response->json('chat_room');
+        $this->assertEquals(
+            1,
+            count($returnedChatRoom['customer_profiles'])
+        );
+
+        $returnedCRProfileNoPivot = $returnedChatRoom['customer_profiles'][0];
+        unset($returnedCRProfileNoPivot['pivot']);
+        $this->assertEquals(
+            $otherProfile->toArray(),
+            $returnedCRProfileNoPivot
+        );
     }
 }
