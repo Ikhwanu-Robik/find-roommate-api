@@ -69,13 +69,13 @@ class SplittedSignupTest extends TestCase
     {
         $user = User::factory()->create();
         $createUserData = (new UserData)
-            ->replace(['name' => $user->name])->toArray();
+            ->replace(['phone' => $user->phone])->toArray();
 
-        $response = $this->post("/api/v2/signup", $createUserData);
+        $response = $this->postJson("/api/v2/signup", $createUserData);
 
         $response->assertStatus(422);
         $response->assertOnlyInvalid([
-            'phone' => 'The phone is already taken'
+            'phone' => 'The phone has already been taken'
         ]);
     }
 }
