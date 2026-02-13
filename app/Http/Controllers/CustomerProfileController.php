@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateCustomerProfileRequest;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use App\Models\CustomerProfile;
@@ -13,6 +15,39 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 
 class CustomerProfileController extends Controller
 {
+    public function store(
+        CreateCustomerProfileRequest $request,
+        User $user,
+        TextTagsGenerator $tagsGenerator
+    ) {
+        if ($user->isNot($request->user())) {
+            return response()->json([
+                'message' => 'You can only create profile for your account'
+            ], 403);
+        }
+
+        $validated = $request->validated();
+        $pathToImage = $request->file('profile_photo')->store('profile_pics');
+        if ($pathToImage === false) {
+            return response()->json([
+                'message' => 'Failed to store profile photo'
+            ], 500);
+        }
+        $validated['profile_photo'] = $pathToImage;
+
+        $customerProfile = CustomerProfile::make($validated);
+        $tags = $tagsGenerator->generate($customerProfile->bio);
+
+        $customerProfile->save();
+
+        $customerProfile->attachTags($tags);
+        $customerProfile->user()->save($user);
+
+        return response()->json([
+            'customer_profile' => $customerProfile
+        ]);
+    }
+
     public function update(
         EditProfileRequest $request,
         CustomerProfile $customerProfile,
@@ -39,7 +74,7 @@ class CustomerProfileController extends Controller
             }
 
             $customerProfile->save();
-            
+
             // for some reason, isDirty('profile_photo') doesn't work
             if ($newImagePath) {
                 Storage::delete($oldImagePath);

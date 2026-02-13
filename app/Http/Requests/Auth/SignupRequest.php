@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests\Auth;
 
-use App\Rules\PastDate;
-use App\Rules\BinaryGender;
 use App\Rules\IndonesianPhoneNumber;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -23,21 +21,7 @@ class SignupRequest extends FormRequest
                 new IndonesianPhoneNumber,
                 'unique:users,phone'
             ],
-            'password' => 'required',
-            'birthdate' => [
-                'required',
-                new PastDate
-            ],
-            'gender' => [
-                'required',
-                new BinaryGender
-            ],
-            'address' => 'required',
-            'bio' => 'required',
-            'profile_photo' => [
-                'required',
-                'image'
-            ]
+            'password' => 'required'
         ];
     }
 }

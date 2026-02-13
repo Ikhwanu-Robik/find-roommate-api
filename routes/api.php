@@ -9,8 +9,8 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\CustomerProfileController;
 use App\Http\Controllers\Auth\Customer\SignupController;
 
-Route::post('/signup', SignupController::class)->name('signup');
-Route::post('/login', LoginController::class)->name('login');
+Route::post('/signup', [SignupController::class, "signupAndCreateProfile"])->name('signup');
+Route::post('/login', LoginController::class)->name(name: 'login');
 
 Route::get('/lodgings', [LodgingController::class, 'index']);
 
@@ -42,3 +42,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/profiles/{customerProfile}', [CustomerProfileController::class, 'update'])
         ->name('customer-profiles.update');
 });
+
+Route::group(["prefix" => "v2"], function () {
+    Route::post("/signup", [SignupController::class, "signup"]);
+
+    Route::post("/users/{user}/profiles", [CustomerProfileController::class, 'store'])
+        ->middleware('auth:sanctum');
+})->name("v2.signup");

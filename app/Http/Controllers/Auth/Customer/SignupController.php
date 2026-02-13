@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers\Auth\Customer;
 
-use App\Models\CustomerProfile;
+use App\Http\Requests\Auth\SignupAndCreateProfileRequest;
 use App\Models\User;
+use App\Models\CustomerProfile;
+use App\Services\TextTagsGenerator;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\SignupRequest;
-use App\Services\TextTagsGenerator;
 
 class SignupController extends Controller
 {
-    public function __invoke(SignupRequest $request, TextTagsGenerator $tagsGenerator)
-    {
+    public function signupAndCreateProfile(
+        SignupAndCreateProfileRequest $request,
+        TextTagsGenerator $tagsGenerator
+    ) {
         $pathToStoredImage = $request->file('profile_photo')->store('profile_pics');
 
         $userAttributes = $request->safe(['name', 'phone', 'password']);
@@ -23,7 +26,7 @@ class SignupController extends Controller
         $customerProfile = CustomerProfile::make($profileAttributes);
 
         $tags = $tagsGenerator->generate($customerProfile->bio);
-        
+
         $customerProfile->save();
         $customerProfile->attachTags($tags);
         $user->save();
@@ -35,5 +38,14 @@ class SignupController extends Controller
         }
 
         return response()->json($response);
+    }
+
+    public function signup(SignupRequest $request)
+    {
+        $user = User::create($request->validated());
+
+        return response()->json([
+            'user' => $user
+        ]);
     }
 }
