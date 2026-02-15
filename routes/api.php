@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\GoogleSignInController;
 use App\Http\Controllers\ChatRoomController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MatchController;
@@ -8,6 +9,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\CustomerProfileController;
 use App\Http\Controllers\Auth\Customer\SignupController;
+
+Route::post('/auth/google', GoogleSignInController::class);
 
 Route::post('/signup', [SignupController::class, "signupAndCreateProfile"])->name('signup');
 Route::post('/login', LoginController::class)->name(name: 'login');

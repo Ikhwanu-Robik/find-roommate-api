@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://find-roommate.test:5173'],
+    'allowed_origins' => ['http://bagisewa.com:5173'],
 
     'allowed_origins_patterns' => [],
 
