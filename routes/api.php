@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\GoogleSignInController;
 use App\Http\Controllers\ChatRoomController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\LodgingController;
 use App\Http\Controllers\Auth\LoginController;
@@ -44,6 +45,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::put('/profiles/{customerProfile}', [CustomerProfileController::class, 'update'])
         ->name('customer-profiles.update');
+
+    Route::put('/users/{user}', [UserController::class, 'update'])
+        ->name('users.update');
 });
 
 Route::group(["prefix" => "v2"], function () {
