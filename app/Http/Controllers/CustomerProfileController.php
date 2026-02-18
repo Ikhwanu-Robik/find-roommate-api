@@ -58,16 +58,16 @@ class CustomerProfileController extends Controller
         $oldImagePath = null;
         $newImagePath = null;
 
-        if ($profilePhoto) {
-            $newImagePath = $this->storeImageOrThrow($profilePhoto);
-            $oldImagePath = $customerProfile->profile_photo;
-
-            $attributes['profile_photo'] = $newImagePath;
-        }
-
-        $this->updateWithoutSaving($customerProfile, $attributes);
-
         try {
+            if ($profilePhoto) {
+                $newImagePath = $this->storeImageOrThrow($profilePhoto);
+                $oldImagePath = $customerProfile->profile_photo;
+
+                $attributes['profile_photo'] = $newImagePath;
+            }
+
+            $this->updateWithoutSaving($customerProfile, $attributes);
+
             if ($customerProfile->isDirty('bio')) {
                 $newTags = $tagsGenerator->generate($customerProfile->bio);
                 $customerProfile->syncTags($newTags);
@@ -84,7 +84,9 @@ class CustomerProfileController extends Controller
                 'customer_profile' => $customerProfile
             ]);
         } catch (Exception $e) {
-            Storage::delete($newImagePath);
+            if ($newImagePath) {
+                Storage::delete($newImagePath);
+            }
 
             $customerProfile->refresh();
             $oldTags = $tagsGenerator->generate($customerProfile->bio);

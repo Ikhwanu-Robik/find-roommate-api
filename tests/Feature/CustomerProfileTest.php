@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use Mockery;
+use stdClass;
 use Tests\TestCase;
 use App\Models\User;
 use Mockery\MockInterface;
@@ -383,15 +385,17 @@ class CustomerProfileTest extends TestCase
 
         $data = (new ProfileAttribute)->toArray();
 
-        Storage::partialMock()->shouldReceive('delete')->andThrow(
-            'Exception',
-            'Attempt to save models interuppted intentionally',
-            500
-        );
+        $mock = Mockery::mock(CustomerProfile::class)->makePartial();
+        $customerProfile->save = function () {
+            throw new \Exception('Attempt to save model interuppted intentionally', 500);
+        };
+        $mock->shouldReceive('resolveRouteBinding')->andReturn($customerProfile);
+        $this->instance(CustomerProfile::class, $mock);
 
         $response = $this->putJson('/api/profiles/' . $customerProfile->id, $data);
 
         $response->assertServerError();
+        $response->assertJsonPath('message', 'Attempt to save model interuppted intentionally');
 
         $customerProfile->refresh();
         $newTags = $customerProfile->tags;
@@ -399,7 +403,7 @@ class CustomerProfileTest extends TestCase
         $this->assertSame($oldTags->toArray(), $newTags->toArray());
     }
 
-    
+
     public function test_can_create_profile(): void
     {
         $user = User::factory()->create();
