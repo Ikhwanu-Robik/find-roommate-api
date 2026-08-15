@@ -8,16 +8,16 @@
     },
     "routes": [
         {
+            "src": "/storage/(.*)",
+            "dest": "/public/$1"
+        },
+        {
             "src": "/build/assets/(.*)",
             "dest": "/public/build/assets/$1"
         },
         {
             "src": "/favicon.ico",
             "dest": "/public/favicon.ico"
-        },
-        {
-            "src": "/storage/profile_pic_male.png",
-            "dest": "/public/profile_pic_male.png"
         },
         {
             "src": "/(.*)",
