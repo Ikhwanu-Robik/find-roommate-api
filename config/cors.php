@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://bagisewa.com:5173'],
+    'allowed_origins' => ['https://www.bagisewa.my.id'],
 
     'allowed_origins_patterns' => [],
 
