@@ -11,6 +11,10 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\CustomerProfileController;
 use App\Http\Controllers\Auth\Customer\SignupController;
 
+Route::get('/test', function () {
+    return "this is an api test";
+});
+
 Route::post('/auth/google', GoogleSignInController::class);
 
 Route::post('/signup', [SignupController::class, "signupAndCreateProfile"])->name('signup');
