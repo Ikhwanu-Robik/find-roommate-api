@@ -17,4 +17,9 @@ require __DIR__.'/../vendor/autoload.php';
 /** @var Application $app */
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
+logger('laravel started');
+logger('logging the request details', [
+    'full_url' => request()->fullUrl()
+]);
+
 $app->handleRequest(Request::capture());
