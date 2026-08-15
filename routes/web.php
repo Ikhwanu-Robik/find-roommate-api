@@ -8,6 +8,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/test', function () {
+    return "this is a test page";
+});
+
 Route::post('/login', StatefulLoginController::class)
     ->name('login.stateful');
 Route::post('/logout', StatefulLogoutController::class)
