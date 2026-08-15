@@ -1,5 +1,7 @@
 <?php
 
+$_SERVER['SCRIPT_NAME'] = '/index.php';
+
 $directories = [
     '/tmp/storage/framework/views',
     '/tmp/storage/framework/cache',
