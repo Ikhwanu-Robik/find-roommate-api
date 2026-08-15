@@ -17,9 +17,4 @@ require __DIR__.'/../vendor/autoload.php';
 /** @var Application $app */
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
-error_log(json_encode($_REQUEST));
-error_log(Request::capture()->fullUrl());
-
 $app->handleRequest(Request::capture());
-
-logger(Request::capture()->fullUrl());
