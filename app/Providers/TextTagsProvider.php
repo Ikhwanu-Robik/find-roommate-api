@@ -18,11 +18,13 @@ class TextTagsProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->bind(TextTagsGenerator::class, function (Application $app) {
-            if ($app->environment('testing')) {
-                return new DummyTextTagsGenerator;
-            } else {
-                return new APITextTagsGenerator;
-            }
+            // text tags generator is disabled for MVP
+
+            // if ($app->environment('testing')) {
+            return new DummyTextTagsGenerator;
+            // } else {
+            //     return new APITextTagsGenerator;
+            // }
         });
     }
 }
