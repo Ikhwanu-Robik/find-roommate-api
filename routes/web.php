@@ -9,7 +9,7 @@ Route::get('/', function () {
 });
 
 Route::get('/test', function () {
-    return "this is a test page";
+    return Route::getRoutes()->getRoutes();
 });
 
 Route::post('/login', StatefulLoginController::class)
