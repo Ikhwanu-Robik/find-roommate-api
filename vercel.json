@@ -16,8 +16,8 @@
             "dest": "/public/favicon.ico"
         },
         {
-            "src": "/storage/(.*)",
-            "dest": "/public/$1"
+            "src": "/storage/profile_pic_male.png",
+            "dest": "/public/profile_pic_male.png"
         },
         {
             "src": "/(.*)",
