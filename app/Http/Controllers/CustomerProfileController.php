@@ -26,6 +26,7 @@ class CustomerProfileController extends Controller
             ], 403);
         }
 
+        $validated = $request->validated();
         // using dummy image for MVP
         $validated['profile_photo'] = 'profile_pic_male.png';
 
