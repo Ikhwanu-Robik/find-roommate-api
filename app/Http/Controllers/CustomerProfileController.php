@@ -27,8 +27,13 @@ class CustomerProfileController extends Controller
         }
 
         $validated = $request->validated();
-        // using dummy image for MVP
-        $validated['profile_photo'] = 'profile_pic_male.png';
+        $pathToImage = $request->file('profile_photo')->store();
+        if ($pathToImage === false) {
+            return response()->json([
+                'message' => 'Failed to store profile photo'
+            ], 500);
+        }
+        $validated['profile_photo'] = $pathToImage;
 
         $customerProfile = CustomerProfile::make($validated);
         $tags = $tagsGenerator->generate($customerProfile->bio);
