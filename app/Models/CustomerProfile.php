@@ -29,7 +29,13 @@ class CustomerProfile extends Model
     protected function profilePhoto(): Attribute
     {
         return Attribute::make(
-            get: function (string $path) {
+            get: function (mixed $values, array $attributes) {
+                $path = $attributes['profile_photo'] ?? null;
+
+                if (!$path) {
+                    return null;
+                }
+
                 $url = config('filesystems.disks.s3.url');
                 $bucket = config('filesystems.disks.s3.bucket');
                 return "$url/$bucket/$path";
