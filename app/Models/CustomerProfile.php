@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Spatie\Tags\HasTags;
 use App\Services\TextTagsGenerator;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +23,19 @@ class CustomerProfile extends Model
         'bio',
         'profile_photo',
     ];
+
+    protected $appends = ['profile_photo'];
+
+    protected function profilePhoto(): Attribute
+    {
+        return Attribute::make(
+            get: function (string $path) {
+                $url = config('filesystems.disks.s3.url');
+                $bucket = config('filesystems.disks.s3.bucket');
+                return "$url/$bucket/$path";
+            }
+        );
+    }
 
     public function user()
     {
@@ -48,7 +62,7 @@ class CustomerProfile extends Model
         $minSameTags = (int) ceil(count($tags) * $similarityThreshold);
 
         $builder->whereHas('tags', function (Builder $innerBuilder) use ($tags) {
-            $innerBuilder->whereIn('tags.name->' . config('app.locale'),  $tags);
-        }, '>=', $minSameTags); 
+            $innerBuilder->whereIn('tags.name->' . config('app.locale'), $tags);
+        }, '>=', $minSameTags);
     }
 }
