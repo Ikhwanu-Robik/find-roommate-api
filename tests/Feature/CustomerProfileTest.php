@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use Mockery;
-use stdClass;
 use Tests\TestCase;
 use App\Models\User;
 use Mockery\MockInterface;
@@ -12,6 +11,7 @@ use App\Models\CustomerProfile;
 use Illuminate\Http\UploadedFile;
 use App\Services\TextTagsGenerator;
 use Illuminate\Support\Facades\Storage;
+use Tests\Util\Profiles\ProfileUtil;
 use Tests\Util\Profiles\ProfileAttribute;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
@@ -308,7 +308,8 @@ class CustomerProfileTest extends TestCase
 
         $response->assertOk();
 
-        $newProfilePhoto = CustomerProfile::find($customerProfile->id)->profile_photo;
+        $cp = CustomerProfile::find($customerProfile->id);
+        $newProfilePhoto = ProfileUtil::fullURLtoProfilePhotoPath($cp->profile_photo);
         Storage::assertExists($newProfilePhoto);
     }
 
@@ -370,7 +371,7 @@ class CustomerProfileTest extends TestCase
 
         $response->assertServerError();
 
-        $oldProfilePhoto = $customerProfile->profile_photo;
+        $oldProfilePhoto = ProfileUtil::fullURLtoProfilePhotoPath($customerProfile['profile_photo']);
         Storage::assertExists($oldProfilePhoto);
     }
 
@@ -417,6 +418,9 @@ class CustomerProfileTest extends TestCase
 
         $response->assertOk();
         $profile = $response->json('customer_profile');
+
+        $profile['profile_photo'] = ProfileUtil::fullURLtoProfilePhotoPath($profile['profile_photo']);
+
         // unsetting them because assertDatabaseHas
         // only supports specific format of timestamps
         unset($profile['created_at']);
@@ -465,7 +469,7 @@ class CustomerProfileTest extends TestCase
         );
 
         $response->assertOk();
-        $savedFilePath = $response->json('customer_profile.profile_photo');
+        $savedFilePath = ProfileUtil::fullURLtoProfilePhotoPath($response->json('customer_profile.profile_photo'));
         Storage::assertExists($savedFilePath);
     }
 

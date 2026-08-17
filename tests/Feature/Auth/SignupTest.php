@@ -9,6 +9,7 @@ use Mockery\MockInterface;
 use Illuminate\Http\UploadedFile;
 use Tests\Util\Auth\SignupAssertions;
 use Tests\Util\Auth\SignupAttributes;
+use Tests\Util\Profiles\ProfileUtil;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
@@ -36,6 +37,7 @@ class SignupTest extends TestCase
         $this->assertUserExistInDB($user);
 
         $customerProfile = $user['profile'];
+        $customerProfile['profile_photo'] = ProfileUtil::fullURLtoProfilePhotoPath($customerProfile['profile_photo']);
         $this->assertCustomerProfileExistInDB($customerProfile);
     }
 
@@ -198,7 +200,7 @@ class SignupTest extends TestCase
 
         $response = $this->postJson('/api/signup', $data);
 
-        $savedFilePath = $response->json('user.profile.profile_photo');
+        $savedFilePath = ProfileUtil::fullURLtoProfilePhotoPath($response->json('user.profile.profile_photo'));
         Storage::assertExists($savedFilePath);
     }
 
